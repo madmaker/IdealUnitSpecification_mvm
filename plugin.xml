@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension point="org.eclipse.ui.commands">
+      <command
+            name="Sample Command"
+            categoryId="ru.idealplm.specification.mvm.commands.category"
+            id="ru.idealplm.specification.mvm.commands.sampleCommand">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="ru.idealplm.specification.mvm.commands.sampleCommand"
+            class="ru.idealplm.specification.mvm.handlers.SampleHandler">
+      </handler>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="ru.idealplm.specification.mvm.commands.sampleCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="ru.idealplm.specification.mvm.toolbars.sampleToolbar">
+            <command
+                  commandId="ru.idealplm.specification.mvm.commands.sampleCommand"
+                  icon="icons/sample.gif"
+                  tooltip="Построение спецификации"
+                  id="ru.idealplm.specification.mvm.toolbars.sampleCommand">
+                  <visibleWhen>
+                        <reference
+                            definitionId="com.teamcenter.rac.pse.inMainView">
+                        </reference>
+                  </visibleWhen>
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+
+</plugin>
