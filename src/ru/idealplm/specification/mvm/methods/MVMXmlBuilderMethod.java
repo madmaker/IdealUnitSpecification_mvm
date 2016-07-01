@@ -22,9 +22,11 @@ import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
 import ru.idealplm.utils.specification.Specification.FormField;
 import ru.idealplm.utils.specification.methods.XmlBuilderMethod;
+import ru.idealplm.utils.specification.util.LineUtil;
 
 public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	
+	final private double maxWidthGlobalRemark = 500.0;
 	private ArrayList<Integer> max_cols_sise_a1;
 	private final int MAX_LINES_FIRST = 29;
 	private final int MAX_LINES_OTHER = 32;
@@ -40,6 +42,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	Element node_block = null;
 	Element node_occ_title;
 	Element node_occ;
+	ArrayList<String> globalRemark = null;
 	
 	private BlockLine emptyLine;
 	
@@ -70,6 +73,10 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	@Override
 	public File makeXmlFile(Specification specification) {
 		System.out.println("...METHOD... XmlBuilderhMethod");
+		if(specification.getStringProperty("AddedNote")!=null){
+			System.out.println("--===---Added Note > 0");
+			globalRemark = LineUtil.getFittedLines(specification.getStringProperty("AddedText"), maxWidthGlobalRemark);
+		}
 		stampMap.put("NAIMEN", specification.getStringProperty("NAIMEN"));
 		stampMap.put("OBOZNACH", specification.getStringProperty("OBOZNACH"));
 		stampMap.put("PERVPRIM", specification.getStringProperty("PERVPRIM"));
@@ -202,7 +209,12 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	}
 	
 	public void newLine(Block block, BlockLine line){
-		//boolean isLastLineInBlock = block.getListOfLines().get(block.getListOfLines().size()-1)!=line;
+		boolean isLastLineInBlock = block.getListOfLines().get(block.getListOfLines().size()-1)==line;
+		
+		System.out.println("IsLastLineInBlock?=" + isLastLineInBlock + " glo");
+		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.getLineHeight()))){
+			newPage();
+		}
 		
 		if(getFreeLinesNum() < (line.getLineHeight() + 1 + countSublines(line))) newPage();
 		
@@ -235,6 +247,10 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 				node.setAttribute("align", "center");
 				node.setTextContent(line.getFormat().toString());
 				node_occ.appendChild(node);
+				node = document.createElement("Col_" + 2);
+				node.setAttribute("align", "center");
+				node.setTextContent(line.getZone().toString());
+				node_occ.appendChild(node);
 				node = document.createElement("Col_" + 3);
 				node.setAttribute("align", "center");
 				node.setTextContent(line.getPosition());
@@ -257,6 +273,17 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			if (i==line.getLineHeight()-1){
 			}
 			
+			node_block.appendChild(node_occ);
+		}
+		
+		if(isLastLineInBlock && globalRemark!=null){
+			node_occ = document.createElement("Occurrence");
+			for(String string : globalRemark){
+					node = document.createElement("Col_" + 4);
+					node.setAttribute("align", "left");
+					node.setTextContent(string);
+					node_occ.appendChild(node);
+			}
 			node_block.appendChild(node_occ);
 		}
 		

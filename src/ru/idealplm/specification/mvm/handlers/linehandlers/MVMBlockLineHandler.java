@@ -16,13 +16,13 @@ public class MVMBlockLineHandler implements BlockLineHandler{
 		if(bomLine.getZone()==null){
 			bomLine.setZone("");
 		}
+		if(bomLine.getZone().exceedsLimit){
+			bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getZone().toString(),Specification.columnLengths.get(FormField.REMARK)));
+			bomLine.setZone("*)");
+		}
 		if(bomLine.getFormat().exceedsLimit){
 			bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getFormat().toString(),Specification.columnLengths.get(FormField.REMARK)));
 			bomLine.setFormat("*)");
-		}
-		if(bomLine.getZone().exceedsLimit){
-			bomLine.getRemark().insert(LineUtil.getFittedLines(bomLine.getZone().toString(),Specification.columnLengths.get(FormField.REMARK)));
-			bomLine.setZone("*)");
 		}
 		if(bomLine.getSubstituteBOMLines()!=null){
 			bomLine.getRemark().insertAt(0, "Îñí.");

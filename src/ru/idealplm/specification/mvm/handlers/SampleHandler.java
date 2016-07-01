@@ -57,19 +57,19 @@ public class SampleHandler extends AbstractHandler {
 		PositionComparator posComparator = new PositionComparator();
 		
 		BlockList blockList = specification.getBlockList();
-		blockList.addBlock(new Block(BlockContentType.DOCS, "Default", docComparator, docComparator, 2));
-		blockList.addBlock(new Block(BlockContentType.COMPLEXES, "Default", posComparator, posComparator, 4));
-		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, "Default", posComparator, posComparator, 6));
-		blockList.addBlock(new Block(BlockContentType.DETAILS, "Default", posComparator, posComparator, 8));
-		blockList.addBlock(new Block(BlockContentType.STANDARDS, "Default", posComparator, posComparator, 10));
-		blockList.addBlock(new Block(BlockContentType.OTHERS, "Default", posComparator, posComparator, 10));
-		blockList.addBlock(new Block(BlockContentType.MATERIALS, "Default", posComparator, posComparator, 12));
-		blockList.addBlock(new Block(BlockContentType.KITS, "Default", posComparator, posComparator, 14));
+		blockList.addBlock(new Block(BlockContentType.DOCS, "Default", docComparator, docComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.COMPLEXES, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.DETAILS, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.STANDARDS, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.OTHERS, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.MATERIALS, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.KITS, "Default", posComparator, posComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.COMPLEXES, "ME", defaultComparator, defaultComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, "ME", defaultComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.DETAILS, "ME", defaultComparator, defaultComparator, 80));
+		blockList.addBlock(new Block(BlockContentType.DETAILS, "ME", defaultComparator, defaultComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.STANDARDS, "ME", defaultComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.OTHERS, "ME", posComparator, posComparator, 10));
+		blockList.addBlock(new Block(BlockContentType.OTHERS, "ME", posComparator, posComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.MATERIALS, "ME", defaultComparator, defaultComparator, 0));
 		
 		specification.setColumnLength(FormField.FORMAT, 3);
@@ -77,8 +77,8 @@ public class SampleHandler extends AbstractHandler {
 		specification.setColumnLength(FormField.ID, 3);
 		specification.setColumnLength(FormField.NAME, 194.0);
 		specification.setColumnLength(FormField.POSITION, 3);
-		specification.setColumnLength(FormField.QUANTITY, 100);
-		specification.setColumnLength(FormField.REMARK, 80);
+		specification.setColumnLength(FormField.QUANTITY, 3);
+		specification.setColumnLength(FormField.REMARK, 76);
 		
 		
 		if(!specification.validate()){
