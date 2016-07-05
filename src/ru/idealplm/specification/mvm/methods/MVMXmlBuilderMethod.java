@@ -26,7 +26,7 @@ import ru.idealplm.utils.specification.util.LineUtil;
 
 public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	
-	final private double maxWidthGlobalRemark = 500.0;
+	final private double maxWidthGlobalRemark = 474.0;
 	private ArrayList<Integer> max_cols_sise_a1;
 	private final int MAX_LINES_FIRST = 29;
 	private final int MAX_LINES_OTHER = 32;
@@ -42,6 +42,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	Element node_block = null;
 	Element node_occ_title;
 	Element node_occ;
+	BlockList blockList;
 	ArrayList<String> globalRemark = null;
 	
 	private BlockLine emptyLine;
@@ -73,7 +74,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	@Override
 	public File makeXmlFile(Specification specification) {
 		System.out.println("...METHOD... XmlBuilderhMethod");
-		if(specification.getStringProperty("AddedNote")!=null){
+		if(specification.getStringProperty("AddedText")!=null){
 			System.out.println("--===---Added Note > 0");
 			globalRemark = LineUtil.getFittedLines(specification.getStringProperty("AddedText"), maxWidthGlobalRemark);
 		}
@@ -109,7 +110,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 								.intValue()).intValue()));
 			node_root.appendChild(node);
 			
-			BlockList blockList = specification.getBlockList();
+			blockList = specification.getBlockList();
 			ListIterator<Block> iterator = blockList.listIterator();
 			Block block;
 			
@@ -209,9 +210,10 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	}
 	
 	public void newLine(Block block, BlockLine line){
-		boolean isLastLineInBlock = block.getListOfLines().get(block.getListOfLines().size()-1)==line;
+		boolean isLastLineInBlock = (block.getListOfLines().get(block.getListOfLines().size()-1)==line) && blockList.getLast()==block;
 		
-		System.out.println("IsLastLineInBlock?=" + isLastLineInBlock + " glo");
+		System.out.println("IsLastLineInBlock?=" + isLastLineInBlock + " global");
+		System.out.println(globalRemark!=null);
 		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.getLineHeight()))){
 			newPage();
 		}
@@ -277,14 +279,16 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 		}
 		
 		if(isLastLineInBlock && globalRemark!=null){
-			node_occ = document.createElement("Occurrence");
+			System.out.println("===HERE goes...........");
+			addEmptyLines(1);
 			for(String string : globalRemark){
-					node = document.createElement("Col_" + 4);
-					node.setAttribute("align", "left");
-					node.setTextContent(string);
-					node_occ.appendChild(node);
+				node_occ = document.createElement("Occurrence");
+				node = document.createElement("Col_" + 4);
+				node.setAttribute("align", "left");
+				node.setTextContent(string);
+				node_occ.appendChild(node);
+				node_block.appendChild(node_occ);
 			}
-			node_block.appendChild(node_occ);
 		}
 		
 		currentLineNum += line.getLineHeight();

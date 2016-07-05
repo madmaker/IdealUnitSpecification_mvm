@@ -15,6 +15,7 @@ import com.teamcenter.rac.aif.kernel.AIFComponentContext;
 import com.teamcenter.rac.kernel.RelatedSubstituteComp;
 import com.teamcenter.rac.kernel.TCComponent;
 import com.teamcenter.rac.kernel.TCComponentBOMLine;
+import com.teamcenter.rac.kernel.TCComponentDataset;
 import com.teamcenter.rac.kernel.TCComponentItem;
 import com.teamcenter.rac.kernel.TCComponentItemRevision;
 import com.teamcenter.rac.kernel.TCException;
@@ -58,7 +59,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 		}
 		
 		private final String[] blProps = new String[] { 
-				"m9_Zone",
+				"M9_Zone",
 				"bl_sequence_no",
 				"bl_quantity",
 				"M9_Note",
@@ -87,6 +88,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				MVMBlockLineHandler blockLineHandler = new MVMBlockLineHandler();
 				BlockLine resultBlockLine = new BlockLine(blockLineHandler);
 				resultBlockLine.setZone(properties[0]);
+				System.out.println("ZONE:" + properties[0]);
 				resultBlockLine.setPosition(properties[1]);
 				
 				if(item.getType().equals("M9_CompanyPart")){
@@ -128,7 +130,20 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 								break;
 							}
 						}
+						AIFComponentContext[] relatedBlanks = bomLine.getItemRevision().getRelated("M9_StockRel");
+						if(relatedBlanks.length>0){
+							BlockLine blank = new BlockLine();
+							blank.setPosition("-");
+							blank.setName(relatedBlanks[0].getComponent().getProperty("object_name"));
+							if(!relatedBlanks[0].getComponent().getType().equals("CommercialPart")){
+								blank.setId(relatedBlanks[0].getComponent().getProperty("item_id"));
+							}
+							resultBlockLine.attachLine(blank);
+						}
 						if(!hasDraft){
+							if(itemIR.getProperty("m9_CADMaterial").equals("")){
+								specification.getErrorList().addError(new Error("ERROR", "У БЧ-детали с идентификатором " + item.getProperty("item_id") + " не заполнен атрибут \"Исходный материал\""));
+							}
 							resultBlockLine.setFormat("БЧ");
 							resultBlockLine.setName(itemIR.getProperty("object_name") + "\n" + itemIR.getProperty("m9_CADMaterial") + " " + itemIR.getProperty("m9_AddNote"));
 						} else {
@@ -343,6 +358,20 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					specification.addStringProperty("LITERA2", documentIR.getProperty("m9_Litera2"));
 					specification.addStringProperty("LITERA3", documentIR.getProperty("m9_Litera3"));
 					specification.addStringProperty("PERVPRIM", documentIR.getItem().getProperty("m9_PrimaryApp"));
+					try{
+						for (AIFComponentContext compContext : documentIR.getChildren()){
+							System.out.println(">>> TYPE: " + compContext.getComponent().getProperty("object_type"));
+							if ((compContext.getComponent() instanceof TCComponentDataset) 
+									&& compContext.getComponent().getProperty("object_desc").equals("Спецификация")) {
+								if(((TCComponent)compContext.getComponent()).isCheckedOut()){
+									specification.getErrorList().addError(new Error("ERROR", "Набор данных заблокирован."));
+								}
+							}
+	
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace();
+					}
 					continue;
 				}
 				if(shortType!=null){
@@ -392,7 +421,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				if(shortType!=null){
 					if(shortType.equals("МЭ")){
 						if(specification.getStringProperty("MEDocumentId")!=null) {
-							specification.getErrorList().addError(new Error("ERROR", "Определено более одного документа МЭ"));
+							specification.getErrorList().addError(new Error("ERROR", "Определено более одного документа МЭ."));
 						} else {
 							specification.addStringProperty("MEDocumentId", id);
 						}
@@ -409,7 +438,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 	
 	private void readSpecifiedItemData(TCComponentBOMLine bomLine){
 		try{
-			specification.addStringProperty("Note", bomLine.getItemRevision().getProperty("m9_AddNote").trim().equals("")?null:bomLine.getItemRevision().getProperty("m9_AddNote").trim());
+			specification.addStringProperty("AddedText", bomLine.getItemRevision().getProperty("m9_AddNote").trim().equals("")?null:bomLine.getItemRevision().getProperty("m9_AddNote").trim());
 			specification.addStringProperty("OBOZNACH", bomLine.getItem().getProperty("item_id"));
 			specification.addStringProperty("NAIMEN", bomLine.getItemRevision().getProperty("object_name"));
 		} catch (Exception ex){

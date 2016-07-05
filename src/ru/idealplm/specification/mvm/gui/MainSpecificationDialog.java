@@ -100,10 +100,10 @@ public class MainSpecificationDialog extends Dialog {
 			}
 		}
 		text_AddedText.setText(specification.getStringProperty("AddedText")==null?"":specification.getStringProperty("AddedText"));
-		text_Litera1.setText(specification.getStringProperty("Litera1")==null?"":specification.getStringProperty("LITERA1"));
-		text_Litera2.setText(specification.getStringProperty("Litera2")==null?"":specification.getStringProperty("LITERA2"));
-		text_Litera3.setText(specification.getStringProperty("Litera3")==null?"":specification.getStringProperty("LITERA3"));
-		text_PrimaryApp.setText(specification.getStringProperty("PrimaryApp")==null?"":specification.getStringProperty("PERVPRIM"));
+		text_Litera1.setText(specification.getStringProperty("LITERA1")==null?"":specification.getStringProperty("LITERA1"));
+		text_Litera2.setText(specification.getStringProperty("LITERA2")==null?"":specification.getStringProperty("LITERA2"));
+		text_Litera3.setText(specification.getStringProperty("LITERA3")==null?"":specification.getStringProperty("LITERA3"));
+		text_PrimaryApp.setText(specification.getStringProperty("PERVPRIM")==null?"":specification.getStringProperty("PERVPRIM"));
 		PerfTrack.addToLog("Filling contents");
 	}
 	
@@ -273,6 +273,7 @@ public class MainSpecificationDialog extends Dialog {
 				specification.isOkPressed = true;
 				specification.renumerize = button_Renumerize.getSelection();
 				
+				specification.addStringProperty("AddedText", text_AddedText.getText());
 				specification.addStringProperty("LITERA1", text_Litera1.getText());
 				specification.addStringProperty("LITERA2", text_Litera2.getText());
 				specification.addStringProperty("LITERA3", text_Litera3.getText());
