@@ -278,6 +278,16 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			node_block.appendChild(node_occ);
 		}
 		
+		
+		currentLineNum += line.getLineHeight();
+		addEmptyLines(1);
+
+		if(line.getAttachedLines()!=null){
+			for(BlockLine attachedLine : line.getAttachedLines()){
+				newLine(block, attachedLine);
+			}
+		}
+		
 		if(isLastLineInBlock && globalRemark!=null){
 			System.out.println("===HERE goes...........");
 			addEmptyLines(1);
@@ -290,16 +300,6 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 				node_block.appendChild(node_occ);
 			}
 		}
-		
-		currentLineNum += line.getLineHeight();
-		addEmptyLines(1);
-
-		if(line.getAttachedLines()!=null){
-			for(BlockLine attachedLine : line.getAttachedLines()){
-				newLine(block, attachedLine);
-			}
-		}
-		
 	}
 	
 	public void addEmptyLines(int num){

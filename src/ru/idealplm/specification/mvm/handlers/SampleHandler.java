@@ -90,6 +90,10 @@ public class SampleHandler extends AbstractHandler {
 				specification.readBOMData();
 				PerfTrack.addToLog("readBOMData");
 				
+				if(specification.getErrorList().size()>0){
+					System.out.println("TODO: INFORM ABOUT ERRORS");
+				}
+				
 				PerfTrack.prepare("Creating dialog");
 				MainSpecificationDialog mainDialog = new MainSpecificationDialog(HandlerUtil.getActiveShell(event).getShell(), SWT.CLOSE, specification);
 				PerfTrack.addToLog("Creating dialog");

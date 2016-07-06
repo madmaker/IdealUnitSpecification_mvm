@@ -16,6 +16,7 @@ public class MVMReportBuilderMethod implements ReportBuilderMethod{
 
 	@Override
 	public File makeReportFile(Specification specification) {
+		System.out.println("...METHOD... ReportBuilderMethod");
 		return PDFBuilder.xml2pdf(specification.getXmlFile(), Specification.getDefaultSpecificationPDFTemplate(), Specification.getDefaultSpecificationPDFConfig());
 	}
 

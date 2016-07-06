@@ -103,7 +103,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 						AIFComponentContext[] relatedDocs = bomLine.getItemRevision().getRelated("M9_DocRel");
 						for(AIFComponentContext relatedDoc : relatedDocs){
 							String docID = relatedDoc.getComponent().getProperty("item_id");
-							if(docID.substring(0, docID.lastIndexOf(" ")).equals(bomLine.getItem().getProperty("item_id"))){
+							if(docID.equals(bomLine.getItem().getProperty("item_id"))){
 								String format = ((TCComponentItem)relatedDoc.getComponent()).getLatestItemRevision().getProperty("m9_Format");
 								resultBlockLine.setFormat(format);
 								break;
@@ -122,23 +122,13 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 						AIFComponentContext[] relatedDocs = bomLine.getItemRevision().getRelated("M9_DocRel");
 						for(AIFComponentContext relatedDoc : relatedDocs){
 							String docID = relatedDoc.getComponent().getProperty("item_id");
-							if(docID.substring(0, docID.lastIndexOf(" ")).equals(bomLine.getItem().getProperty("item_id"))){
+							if(docID.equals(bomLine.getItem().getProperty("item_id"))){
 								String format = ((TCComponentItem)relatedDoc.getComponent()).getLatestItemRevision().getProperty("m9_Format");
 								System.out.println("+++ got a format = "+format);
 								resultBlockLine.setFormat(format);
 								hasDraft = true;
 								break;
 							}
-						}
-						AIFComponentContext[] relatedBlanks = bomLine.getItemRevision().getRelated("M9_StockRel");
-						if(relatedBlanks.length>0){
-							BlockLine blank = new BlockLine();
-							blank.setPosition("-");
-							blank.setName(relatedBlanks[0].getComponent().getProperty("object_name"));
-							if(!relatedBlanks[0].getComponent().getType().equals("CommercialPart")){
-								blank.setId(relatedBlanks[0].getComponent().getProperty("item_id"));
-							}
-							resultBlockLine.attachLine(blank);
 						}
 						if(!hasDraft){
 							if(itemIR.getProperty("m9_CADMaterial").equals("")){
@@ -161,6 +151,27 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 							}
 						}
 						resultBlockLine.addRefBOMLine(bomLine);
+						AIFComponentContext[] relatedBlanks = bomLine.getItemRevision().getRelated("M9_StockRel");
+						if(relatedBlanks.length>0){
+							BlockLine blank = new BlockLine();
+							TCComponentItem blankItem = (TCComponentItem)relatedBlanks[0].getComponent();
+							blank.setPosition("-");
+							blank.setName(blankItem.getLatestItemRevision().getProperty("object_name") + " " + "Изделие-заготовка для " + resultBlockLine.getId());
+							if(!blankItem.getType().equals("CommercialPart")){
+								relatedDocs = ((TCComponentItem)relatedBlanks[0].getComponent()).getLatestItemRevision().getRelated("M9_DocRel");
+								for(AIFComponentContext relatedDoc : relatedDocs){
+									String docID = relatedDoc.getComponent().getProperty("item_id");
+									if(docID.substring(0, docID.lastIndexOf(" ")).equals(bomLine.getItem().getProperty("item_id"))){
+										String format = blankItem.getLatestItemRevision().getProperty("m9_Format");
+										System.out.println("+++ got a format for blank = "+format);
+										blank.setFormat(format);
+										break;
+									}
+								}
+								blank.setId(relatedBlanks[0].getComponent().getProperty("item_id"));
+							}
+							resultBlockLine.attachLine(blank);
+						}
 						//resultBlockLine.build();
 					} else if(typeOfPart.equals("Комплект")){
 						/****************************Комплекты********************************/
@@ -273,22 +284,23 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			TCComponentBOMLine topBOMLine = specification.getTopBOMLine();
 			AIFComponentContext[] childBOMLines = topBOMLine.getChildren();
 		
-			bomQueue = new ArrayBlockingQueue<AIFComponentContext>(childBOMLines.length);
-			bomQueue.addAll(Arrays.asList(childBOMLines));
-			PerfTrack.addToLog("Getting BOM");
-			
 			readSpecifiedItemData(topBOMLine);
 			readTopIRDocuments(topBOMLine);
-			
-			ExecutorService service = Executors.newFixedThreadPool(/*Runtime.getRuntime().availableProcessors()*/2);
-			for(int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-				service.submit(new MVMBOMLineProcessor(i));
-			}
-			
-			service.shutdown();
-			service.awaitTermination(3, TimeUnit.MINUTES);
-			while(!service.isTerminated()){
-				Thread.sleep(100);
+
+			if(childBOMLines.length>0){
+				bomQueue = new ArrayBlockingQueue<AIFComponentContext>(childBOMLines.length);
+				bomQueue.addAll(Arrays.asList(childBOMLines));
+				PerfTrack.addToLog("Getting BOM");
+				ExecutorService service = Executors.newFixedThreadPool(/*Runtime.getRuntime().availableProcessors()*/2);
+				for(int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+					service.submit(new MVMBOMLineProcessor(i));
+				}
+				
+				service.shutdown();
+				service.awaitTermination(3, TimeUnit.MINUTES);
+				while(!service.isTerminated()){
+					Thread.sleep(100);
+				}
 			}
 			
 			BlockList tempList = new BlockList(specification);
@@ -298,8 +310,11 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				}
 			}
 			specification.setBlockList(tempList);
+			if(tempList.size()==0){
+				specification.getErrorList().addError(new Error("ERROR", "Отсутствуют разделы спецификации."));
+			}
 			
-			System.out.println("SIZE: "+blockList.size());
+			System.out.println("SIZE: "+tempList.size());
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
