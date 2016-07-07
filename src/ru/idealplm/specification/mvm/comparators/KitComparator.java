@@ -5,19 +5,36 @@ import java.util.Comparator;
 
 import ru.idealplm.utils.specification.BlockLine;
 import ru.idealplm.utils.specification.Specification;
+import ru.idealplm.utils.specification.Specification.FormField;
 
-public class DocumentComparator implements Comparator<BlockLine>{
+public class KitComparator implements Comparator<BlockLine>{
 	
 	private Specification specification;
 	private ArrayList<String> docTypesPriority = new ArrayList<String>();
 	
-	public DocumentComparator(Specification specification){
+	public KitComparator(Specification specification){
 		this.specification = specification;
 		loadDocumentTypes();
 	}
 
 	@Override
 	public int compare(BlockLine bl0, BlockLine bl1) {
+		
+		if(bl0.getRefBOMLines() == null && bl1.getRefBOMLines() != null){
+			return -1;
+		} else if(bl0.getRefBOMLines() != null && bl1.getRefBOMLines() == null){
+			return 1;
+		} else if (bl0.getRefBOMLines() != null && bl1.getRefBOMLines() != null){
+			DefaultComparator dc = new DefaultComparator(FormField.ID);
+			int result = dc.compare(bl0, bl1);
+			if(result == 0){
+				dc = new DefaultComparator(FormField.NAME);
+				return dc.compare(bl0, bl1);
+			} else {
+				return result;
+			}
+		}
+		
 		boolean bl0_is_base = Specification.settings.getStringProperty("OBOZNACH").equals(bl0.getId().substring(0, bl0.getId().lastIndexOf(" ")));
 		boolean bl1_is_base = Specification.settings.getStringProperty("OBOZNACH").equals(bl1.getId().substring(0, bl1.getId().lastIndexOf(" ")));
 	

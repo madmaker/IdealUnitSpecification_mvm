@@ -17,11 +17,13 @@ public class MVMBlockLineHandler implements BlockLineHandler{
 			bomLine.setZone("");
 		}
 		if(bomLine.getZone().exceedsLimit){
-			bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getZone().toString(),Specification.columnLengths.get(FormField.REMARK)));
+			//bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getZone().toString(),Specification.columnLengths.get(FormField.REMARK)));
+			bomLine.getRemark().insertAt(0,bomLine.getZone().toString());
 			bomLine.setZone("*)");
 		}
 		if(bomLine.getFormat().exceedsLimit){
-			bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getFormat().toString(),Specification.columnLengths.get(FormField.REMARK)));
+			//bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getFormat().toString(),Specification.columnLengths.get(FormField.REMARK)));
+			bomLine.getRemark().insertAt(0,bomLine.getFormat().toString());
 			bomLine.setFormat("*)");
 		}
 		if(bomLine.getSubstituteBOMLines()!=null){
@@ -32,6 +34,7 @@ public class MVMBlockLineHandler implements BlockLineHandler{
 		if(bomLine.getProperty("UOM")!=null && !bomLine.getProperty("UOM").equals("*")){
 			bomLine.getRemark().insertAt(0, bomLine.getProperty("UOM"));
 		}
+		bomLine.getRemark().build();
 		if(bomLine.getRemark().size() > bomLine.getLineHeight()) bomLine.setLineHeight(bomLine.getRemark().size());
 		System.out.println("REMARK="+bomLine.getRemark().toString());
 	}

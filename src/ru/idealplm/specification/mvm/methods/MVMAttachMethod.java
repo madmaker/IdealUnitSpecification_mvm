@@ -102,11 +102,11 @@ public class MVMAttachMethod implements AttachMethod{
 				System.out.println("Adding to item_id: " + specIR.getProperty("item_id"));
 				specIR.add("IMAN_specification", ds_new);
 				specIR.lock();
-				topBOMLine.getItemRevision().setProperty("m9_AddNote", specification.getStringProperty("AddedText"));
-				specIR.setProperty("m9_Litera1", specification.getStringProperty("LITERA1"));
-				specIR.setProperty("m9_Litera2", specification.getStringProperty("LITERA2"));
-				specIR.setProperty("m9_Litera3", specification.getStringProperty("LITERA3"));
-				specIR.getItem().setProperty("m9_PrimaryApp", specification.getStringProperty("PERVPRIM"));
+				topBOMLine.getItemRevision().setProperty("m9_AddNote", specification.settings.getStringProperty("AddedText"));
+				specIR.setProperty("m9_Litera1", specification.settings.getStringProperty("LITERA1"));
+				specIR.setProperty("m9_Litera2", specification.settings.getStringProperty("LITERA2"));
+				specIR.setProperty("m9_Litera3", specification.settings.getStringProperty("LITERA3"));
+				specIR.getItem().setProperty("m9_PrimaryApp", specification.settings.getStringProperty("PERVPRIM"));
 				specIR.save();
 				specIR.unlock();
 			}

@@ -21,7 +21,6 @@ public class MVMValidateMethod implements ValidateMethod{
 		TCComponentBOMLine topBOMLine = specification.getTopBOMLine();
 		
 		if(topBOMLine==null){
-			System.out.println("Top is null");
 			errorList.addError(new Error("ERROR", "Отсутствует состав для построения спецификации"));
 			return false;
 		}
@@ -29,11 +28,9 @@ public class MVMValidateMethod implements ValidateMethod{
 		try{
 			TCComponentItem item = topBOMLine.getItem();
 			if(!"M9_CompanyPart".equals(item.getType())){
-				System.out.println("Wrong object type");
 				errorList.addError(new Error("ERROR", "Недопустимый вид изделия!"));
 				return false;
 			} else if(!acceptableTypesOfPart.contains(item.getProperty("m9_TypeOfPart"))){
-				System.out.println("Wrong type of part");
 				errorList.addError(new Error("ERROR", "Недопустимый тип изделия!"));
 				return false;
 			}

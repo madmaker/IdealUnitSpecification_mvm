@@ -14,6 +14,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 import ru.idealplm.specification.mvm.comparators.DocumentComparator;
 import ru.idealplm.specification.mvm.comparators.DefaultComparator;
+import ru.idealplm.specification.mvm.comparators.KitComparator;
 import ru.idealplm.specification.mvm.comparators.PositionComparator;
 import ru.idealplm.specification.mvm.gui.MainSpecificationDialog;
 import ru.idealplm.specification.mvm.methods.MVMAttachMethod;
@@ -53,6 +54,7 @@ public class SampleHandler extends AbstractHandler {
 		
 		DefaultComparator defaultComparator = new DefaultComparator(Specification.FormField.POSITION);
 		DocumentComparator docComparator = new DocumentComparator(specification);
+		KitComparator kitComparator = new KitComparator(specification);
 		NumberComparator numComparator = new NumberComparator(Specification.FormField.POSITION);
 		PositionComparator posComparator = new PositionComparator();
 		
@@ -64,13 +66,14 @@ public class SampleHandler extends AbstractHandler {
 		blockList.addBlock(new Block(BlockContentType.STANDARDS, "Default", posComparator, posComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.OTHERS, "Default", posComparator, posComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.MATERIALS, "Default", posComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.KITS, "Default", posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.KITS, "Default", kitComparator, kitComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.COMPLEXES, "ME", defaultComparator, defaultComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, "ME", defaultComparator, defaultComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.DETAILS, "ME", defaultComparator, defaultComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.STANDARDS, "ME", defaultComparator, defaultComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.OTHERS, "ME", posComparator, posComparator, 0));
 		blockList.addBlock(new Block(BlockContentType.MATERIALS, "ME", defaultComparator, defaultComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.KITS, "ME", kitComparator, kitComparator, 0));
 		
 		specification.setColumnLength(FormField.FORMAT, 3);
 		specification.setColumnLength(FormField.ZONE, 3);
@@ -106,7 +109,7 @@ public class SampleHandler extends AbstractHandler {
 				
 				if (!specification.isOkPressed) { return null; }
 				
-				if(Specification.renumerize){
+				if(Specification.settings.getBooleanProperty("doRenumerize")){
 					PerfTrack.prepare("Locking BOM");
 					topBomLine.lock();
 					PerfTrack.addToLog("Locking BOM");
@@ -131,7 +134,7 @@ public class SampleHandler extends AbstractHandler {
 				System.out.println(specification.getErrorList().toString());
 				System.out.println("--- ERROR LIST ---");
 				
-				if(Specification.renumerize){
+				if(Specification.settings.getBooleanProperty("doRenumerize")){
 					PerfTrack.prepare("Saving&unlocking BOM");
 					topBomLine.save();
 					topBomLine.unlock();

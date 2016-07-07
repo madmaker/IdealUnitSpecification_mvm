@@ -74,16 +74,15 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	@Override
 	public File makeXmlFile(Specification specification) {
 		System.out.println("...METHOD... XmlBuilderhMethod");
-		if(specification.getStringProperty("AddedText")!=null){
-			System.out.println("--===---Added Note > 0");
-			globalRemark = LineUtil.getFittedLines(specification.getStringProperty("AddedText"), maxWidthGlobalRemark);
+		if(specification.settings.getStringProperty("AddedText")!=null){
+			globalRemark = LineUtil.getFittedLines(specification.settings.getStringProperty("AddedText"), maxWidthGlobalRemark);
 		}
-		stampMap.put("NAIMEN", specification.getStringProperty("NAIMEN"));
-		stampMap.put("OBOZNACH", specification.getStringProperty("OBOZNACH"));
-		stampMap.put("PERVPRIM", specification.getStringProperty("PERVPRIM"));
-		stampMap.put("LITERA1", specification.getStringProperty("LITERA1"));
-		stampMap.put("LITERA2", specification.getStringProperty("LITERA2"));
-		stampMap.put("LITERA3", specification.getStringProperty("LITERA3"));
+		stampMap.put("NAIMEN", specification.settings.getStringProperty("NAIMEN"));
+		stampMap.put("OBOZNACH", specification.settings.getStringProperty("OBOZNACH"));
+		stampMap.put("PERVPRIM", specification.settings.getStringProperty("PERVPRIM"));
+		stampMap.put("LITERA1", specification.settings.getStringProperty("LITERA1"));
+		stampMap.put("LITERA2", specification.settings.getStringProperty("LITERA2"));
+		stampMap.put("LITERA3", specification.settings.getStringProperty("LITERA3"));
 		
 		emptyLine = (new BlockLine()).build();
 		emptyLine.setQuantity("-1.0");
@@ -121,7 +120,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 					if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
 						newPage();
 						//addEmptyLines(1);
-						String string = "Устанавливается по " + specification.getStringProperty("MEDocumentId");
+						String string = "Устанавливается по " + specification.settings.getStringProperty("MEDocumentId");
 						node_occ = document.createElement("Occurrence");
 						node = document.createElement("Col_" + 4);
 						node.setTextContent(string.substring(0, string.length()/2));
@@ -169,7 +168,6 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 				addEmptyLines(1);
 			}
 			if(getFreeLinesNum() < 3 + block.getListOfLines().get(0).getLineHeight()){
-				System.out.println("Free:"+getFreeLinesNum() + " lineHeight:"+block.getListOfLines().get(0).getLineHeight());
 				newPage();
 			}
 			//addEmptyLines(1);
@@ -212,8 +210,6 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	public void newLine(Block block, BlockLine line){
 		boolean isLastLineInBlock = (block.getListOfLines().get(block.getListOfLines().size()-1)==line) && blockList.getLast()==block;
 		
-		System.out.println("IsLastLineInBlock?=" + isLastLineInBlock + " global");
-		System.out.println(globalRemark!=null);
 		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.getLineHeight()))){
 			newPage();
 		}

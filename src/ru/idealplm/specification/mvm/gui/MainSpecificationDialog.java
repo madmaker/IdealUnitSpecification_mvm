@@ -94,16 +94,16 @@ public class MainSpecificationDialog extends Dialog {
 			if(block.getBlockType().equals("Default") && iterator.nextIndex()!=blockList.size()){
 				if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
 					blockItem = new TableItem(table, SWT.NONE);
-					blockItem.setText(new String[]{"Устанавливается по " + specification.getStringProperty("MEDocumentId")});
+					blockItem.setText(new String[]{"Устанавливается по " + specification.settings.getStringProperty("MEDocumentId")});
 					blockItem.setGrayed(true);
 				}
 			}
 		}
-		text_AddedText.setText(specification.getStringProperty("AddedText")==null?"":specification.getStringProperty("AddedText"));
-		text_Litera1.setText(specification.getStringProperty("LITERA1")==null?"":specification.getStringProperty("LITERA1"));
-		text_Litera2.setText(specification.getStringProperty("LITERA2")==null?"":specification.getStringProperty("LITERA2"));
-		text_Litera3.setText(specification.getStringProperty("LITERA3")==null?"":specification.getStringProperty("LITERA3"));
-		text_PrimaryApp.setText(specification.getStringProperty("PERVPRIM")==null?"":specification.getStringProperty("PERVPRIM"));
+		text_AddedText.setText(specification.settings.getStringProperty("AddedText")==null?"":specification.settings.getStringProperty("AddedText"));
+		text_Litera1.setText(specification.settings.getStringProperty("LITERA1")==null?"":specification.settings.getStringProperty("LITERA1"));
+		text_Litera2.setText(specification.settings.getStringProperty("LITERA2")==null?"":specification.settings.getStringProperty("LITERA2"));
+		text_Litera3.setText(specification.settings.getStringProperty("LITERA3")==null?"":specification.settings.getStringProperty("LITERA3"));
+		text_PrimaryApp.setText(specification.settings.getStringProperty("PERVPRIM")==null?"":specification.settings.getStringProperty("PERVPRIM"));
 		PerfTrack.addToLog("Filling contents");
 	}
 	
@@ -119,6 +119,12 @@ public class MainSpecificationDialog extends Dialog {
 		final Button button_Renumerize = new Button(shlCgtwbabrfwbz, SWT.CHECK);
 		button_Renumerize.setBounds(10, 10, 213, 16);
 		button_Renumerize.setText("\u041F\u0435\u0440\u0435\u043D\u0443\u043C\u0435\u0440\u043E\u0432\u0430\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438");
+		button_Renumerize.setEnabled(specification.settings.getBooleanProperty("canRenumerize"));
+		if(!button_Renumerize.isEnabled()) {
+			button_Renumerize.setToolTipText("Недоступно, указан запрет смены позиций.");
+		} else {
+			button_Renumerize.setToolTipText("Перенумерация позиций с возможностью резерва строк и позиций.");
+		}
 		
 		Group group = new Group(shlCgtwbabrfwbz, SWT.NONE);
 		group.setText("\u0420\u0435\u0437\u0435\u0440\u0432 \u043F\u043E\u0437\u0438\u0446\u0438\u0439 \u043F\u043E \u0440\u0430\u0437\u0434\u0435\u043B\u0430\u043C");
@@ -223,13 +229,15 @@ public class MainSpecificationDialog extends Dialog {
 		tableColumn_3.setWidth(93);
 		tableColumn_3.setText("\u0418\u043D\u0442\u0435\u0440\u0432\u0430\u043B \u043F\u043E\u0437.");
 		
-		Button button_1 = new Button(shlCgtwbabrfwbz, SWT.CHECK);
-		button_1.setText("\u0417\u0430\u0447\u0438\u0442\u0430\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438 \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0439 \u0440\u0435\u0432\u0438\u0437\u0438\u0438");
-		button_1.setBounds(10, 258, 225, 16);
+		final Button button_ReadLastRevPos = new Button(shlCgtwbabrfwbz, SWT.CHECK);
+		button_ReadLastRevPos.setText("\u0417\u0430\u0447\u0438\u0442\u0430\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438 \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0439 \u0440\u0435\u0432\u0438\u0437\u0438\u0438");
+		button_ReadLastRevPos.setBounds(10, 258, 225, 16);
+		button_ReadLastRevPos.setEnabled(specification.settings.getBooleanProperty("canReadLastRevPos"));
 		
-		Button button_2 = new Button(shlCgtwbabrfwbz, SWT.CHECK);
-		button_2.setText("\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C \u0440\u0435\u0437\u0435\u0440\u0432 \u043F\u043E\u0437\u0438\u0446\u0438\u0439");
-		button_2.setBounds(10, 282, 225, 16);
+		final Button button_UseReservePos = new Button(shlCgtwbabrfwbz, SWT.CHECK);
+		button_UseReservePos.setText("\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C \u0440\u0435\u0437\u0435\u0440\u0432 \u043F\u043E\u0437\u0438\u0446\u0438\u0439");
+		button_UseReservePos.setBounds(10, 282, 225, 16);
+		button_UseReservePos.setEnabled(specification.settings.getBooleanProperty("canUseReservePos"));
 		
 		Label label = new Label(shlCgtwbabrfwbz, SWT.NONE);
 		label.setBounds(10, 317, 136, 13);
@@ -271,15 +279,15 @@ public class MainSpecificationDialog extends Dialog {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				specification.isOkPressed = true;
-				specification.renumerize = button_Renumerize.getSelection();
+				specification.settings.addBooleanProperty("doRenumerize", button_Renumerize.getSelection());
+				specification.settings.addBooleanProperty("doReadLastRevPos", button_ReadLastRevPos.getSelection());
+				specification.settings.addBooleanProperty("doUseReservePos", button_UseReservePos.getSelection());
 				
-				specification.addStringProperty("AddedText", text_AddedText.getText());
-				specification.addStringProperty("LITERA1", text_Litera1.getText());
-				specification.addStringProperty("LITERA2", text_Litera2.getText());
-				specification.addStringProperty("LITERA3", text_Litera3.getText());
-				specification.addStringProperty("PERVPRIM", text_PrimaryApp.getText());
-				
-				System.out.println("Renumerize: " + specification.renumerize);
+				specification.settings.addStringProperty("AddedText", text_AddedText.getText());
+				specification.settings.addStringProperty("LITERA1", text_Litera1.getText());
+				specification.settings.addStringProperty("LITERA2", text_Litera2.getText());
+				specification.settings.addStringProperty("LITERA3", text_Litera3.getText());
+				specification.settings.addStringProperty("PERVPRIM", text_PrimaryApp.getText());
 				
 				shlCgtwbabrfwbz.dispose();
 				System.out.println("OK!");
