@@ -1,5 +1,6 @@
 package ru.idealplm.specification.mvm.methods;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -109,6 +110,8 @@ public class MVMAttachMethod implements AttachMethod{
 				specIR.getItem().setProperty("m9_PrimaryApp", specification.settings.getStringProperty("PERVPRIM"));
 				specIR.save();
 				specIR.unlock();
+				
+				Desktop.getDesktop().open(ds_new.getFiles("")[0]);
 			}
 		} catch (Exception ex){
 			ex.printStackTrace();

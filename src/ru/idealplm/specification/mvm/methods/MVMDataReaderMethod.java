@@ -132,7 +132,8 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 							resultBlockLine.setRemark(properties[3]);
 						} else {
 							if(!itemIR.getProperty("m9_mass").trim().equals("")) {
-								resultBlockLine.setRemark(itemIR.getProperty("m9_mass") + " Í„\n" + properties[3]);
+								resultBlockLine.setRemark(itemIR.getProperty("m9_mass") + " Í„"/* + properties[3]*/);
+								resultBlockLine.getRemark().insert(properties[3]);
 							} else {
 								resultBlockLine.setRemark(properties[3]);
 							}
@@ -185,6 +186,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					if(materialUIDs.containsKey(itemIR.getUid())){
 						resultBlockLine = materialUIDs.get(itemIR.getUid());
 						resultBlockLine.addQuantity(properties[2]);
+						resultBlockLine.addRefBOMLine(bomLine);
 					} else {
 						materialUIDs.put(itemIR.getUid(), resultBlockLine);
 						resultBlockLine.setName(itemIR.getProperty("object_name"));
@@ -204,6 +206,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 							int quantotyGD = Integer.parseInt(properties[2].equals("")?"1":properties[2]);
 							resultBlockLine = materialUIDs.get(materialIR.getUid());
 							resultBlockLine.addQuantity(String.valueOf(quantityMD*quantotyGD));
+							resultBlockLine.addRefBOMLine(bomLine);
 						} else {
 							String quantityMS = ((TCComponentBOMLine) materialBOMLines[0].getComponent()).getProperty("bl_quantity");
 							float quantityMD = Float.parseFloat(quantityMS.equals("")?"1":quantityMS);
@@ -238,7 +241,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					for(TCComponentBOMLine comp : bomLine.listSubstitutes()){
 						BlockLine substituteLine = parseLine(comp);
 						substituteLine.setIsSubstitute(true);
-						substituteLine.addRefBOMLine(bomLine);
+						//substituteLine.addRefBOMLine(bomLine);
 						substituteLine.setPosition(line.getPosition()+"*");
 						//substituteLine.build();
 						line.addSubstituteBOMLine(substituteLine);
@@ -294,6 +297,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					Thread.sleep(100);
 				}
 			}
+			
+			for (AIFComponentContext currBOMLineContext : childBOMLines)
+				((TCComponentBOMLine) currBOMLineContext.getComponent()).pack();
 			
 			BlockList tempList = new BlockList(specification);
 			for(int i = 0; i < blockList.size(); i++){

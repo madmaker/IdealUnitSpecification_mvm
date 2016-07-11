@@ -33,7 +33,7 @@
                id="ru.idealplm.specification.mvm.toolbars.sampleToolbar">
             <command
                   commandId="ru.idealplm.specification.mvm.commands.sampleCommand"
-                  icon="icons/sample.gif"
+                  icon="icons/specMVM.gif"
                   tooltip="Построение спецификации"
                   id="ru.idealplm.specification.mvm.toolbars.sampleCommand">
                   <visibleWhen>

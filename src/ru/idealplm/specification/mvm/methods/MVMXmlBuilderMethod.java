@@ -170,6 +170,11 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			if(getFreeLinesNum() < 3 + block.getListOfLines().get(0).getLineHeight()){
 				newPage();
 			}
+			if(blockList.getLast()==block && block.size()==1 && globalRemark!=null){
+				if(getFreeLinesNum() < (globalRemark.size() + block.getListOfLines().get(0).getLineHeight() + 2)){
+					newPage();
+				}
+			}
 			//addEmptyLines(1);
 			node_root.appendChild(node_block);
 			node_occ_title = document.createElement("Occurrence");
@@ -184,7 +189,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			for(BlockLine blockLine : block.getListOfLines()){
 				newLine(block, blockLine);
 			}
-			addEmptyLines(block.gerReserveLinesNum());
+			addEmptyLines(block.getReserveLinesNum());
 			node_root.appendChild(node_block);
 		}
 	}
