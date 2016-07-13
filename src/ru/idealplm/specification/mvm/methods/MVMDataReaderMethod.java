@@ -32,14 +32,25 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 	private Specification specification;
 	private BlockList blockList;
 	private BlockingQueue<AIFComponentContext> bomQueue;
-	private ArrayList<String> bl_sequence_noList = new ArrayList<String>();
-	private ArrayList<String> m9_IsFromEAsmList = new ArrayList<String>();
-	private ArrayList<String> m9_DisableChangeFindNoList = new ArrayList<String>();
-	private ArrayList<String> docTypesShort = new ArrayList<String>();
-	private ArrayList<String> docTypesLong = new ArrayList<String>();
-	private ArrayList<String> docKitTypesShort = new ArrayList<String>();
-	private ArrayList<String> docKitTypesLong = new ArrayList<String>();
-	private HashMap<String, BlockLine> materialUIDs = new HashMap<String, BlockLine>();
+	private ArrayList<String> bl_sequence_noList;
+	private ArrayList<String> m9_IsFromEAsmList;
+	private ArrayList<String> m9_DisableChangeFindNoList;
+	private ArrayList<String> docTypesShort;
+	private ArrayList<String> docTypesLong;
+	private ArrayList<String> docKitTypesShort;
+	private ArrayList<String> docKitTypesLong;
+	private HashMap<String, BlockLine> materialUIDs;
+	
+	public MVMDataReaderMethod() {
+		bl_sequence_noList = new ArrayList<String>();
+		m9_IsFromEAsmList = new ArrayList<String>();
+		m9_DisableChangeFindNoList = new ArrayList<String>();
+		docTypesShort = new ArrayList<String>();
+		docTypesLong = new ArrayList<String>();
+		docKitTypesShort = new ArrayList<String>();
+		docKitTypesLong = new ArrayList<String>();
+		materialUIDs = new HashMap<String, BlockLine>();
+	}
 	
 	boolean atLeastOnePosIsFixed = false;
 	
@@ -176,9 +187,12 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					resultBlockLine.setQuantity(properties[2]);
 					resultBlockLine.setRemark(properties[3]);
 					resultBlockLine.addRefBOMLine(bomLine);
-					if(item.getProperty("m9_TypeOfPart").equals("Other")){
+					System.out.println("~~~~~~FOUND OTHER " + item.getProperty("m9_TypeOfPart"));
+					if(item.getProperty("m9_TypeOfPart").equals("Прочее изделие")){
+						System.out.println("~~~~~~FOUND OTHER");
 						blockList.getBlock(BlockContentType.OTHERS, isDefault?"Default":"ME").addBlockLine(uid, resultBlockLine);
 					} else {
+						System.out.println("~~~~~~FOUND STANDARDS");
 						blockList.getBlock(BlockContentType.STANDARDS, isDefault?"Default":"ME").addBlockLine(uid, resultBlockLine);
 					}
 				} else if(item.getType().equals("M9_Material")){
@@ -199,6 +213,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					/*************************Геометрии материалов****************************/
 					AIFComponentContext[] materialBOMLines = bomLine.getChildren();
 					if(materialBOMLines.length>0){
+						if(materialBOMLines.length>1){
+							specification.getErrorList().addError(new Error("ERROR", "В составе геометрии материала с идентификатором " + item.getProperty("item_id") + " присутствует более одного материала."));
+						}
 						TCComponentItemRevision materialIR = ((TCComponentBOMLine) materialBOMLines[0].getComponent()).getItemRevision();
 						if(materialUIDs.containsKey(materialIR.getUid())){
 							String quantityMS = ((TCComponentBOMLine) materialBOMLines[0].getComponent()).getProperty("bl_quantity");

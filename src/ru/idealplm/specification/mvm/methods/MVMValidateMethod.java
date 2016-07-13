@@ -16,7 +16,7 @@ public class MVMValidateMethod implements ValidateMethod{
 	@Override
 	public boolean validate(Specification specification, ErrorList errorList) {
 		System.out.println("...METHOD... ValidateMethod");
-		ArrayList<String> acceptableTypesOfPart = new ArrayList<String>(Arrays.asList("Сборочная единица", "Complex"));
+		ArrayList<String> acceptableTypesOfPart = new ArrayList<String>(Arrays.asList("Сборочная единица", "Комплект", "Комплекс"));
 		
 		TCComponentBOMLine topBOMLine = specification.getTopBOMLine();
 		

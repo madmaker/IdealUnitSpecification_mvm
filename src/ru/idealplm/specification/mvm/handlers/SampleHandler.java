@@ -89,7 +89,7 @@ public class SampleHandler extends AbstractHandler {
 		specification.setColumnLength(FormField.NAME, 194.0);
 		specification.setColumnLength(FormField.POSITION, 3);
 		specification.setColumnLength(FormField.QUANTITY, 3);
-		specification.setColumnLength(FormField.REMARK, 76);
+		specification.setColumnLength(FormField.REMARK, 88);
 		
 		
 		if(!specification.validate()){
@@ -150,6 +150,9 @@ public class SampleHandler extends AbstractHandler {
 					topBomLine.unlock();
 					PerfTrack.addToLog("Saving&unlocking BOM");
 				}
+				
+				Specification.settings = null;
+				specification = null;				
 				PerfTrack.printLog();
 			} catch (TCException e) {
 				e.printStackTrace();
