@@ -22,6 +22,7 @@ import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
 import ru.idealplm.utils.specification.Specification.FormField;
 import ru.idealplm.utils.specification.methods.XmlBuilderMethod;
+import ru.idealplm.utils.specification.util.GeneralUtils;
 import ru.idealplm.utils.specification.util.LineUtil;
 
 public class MVMXmlBuilderMethod implements XmlBuilderMethod{
@@ -74,16 +75,30 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	@Override
 	public File makeXmlFile(Specification specification) {
 		System.out.println("...METHOD... XmlBuilderhMethod");
-		if(specification.settings.getStringProperty("AddedText")!=null){
-			globalRemark = LineUtil.getFittedLines(specification.settings.getStringProperty("AddedText"), maxWidthGlobalRemark);
+		if(Specification.settings.getStringProperty("AddedText")!=null){
+			globalRemark = LineUtil.getFittedLines(Specification.settings.getStringProperty("AddedText"), maxWidthGlobalRemark);
 		}
-		stampMap.put("NAIMEN", specification.settings.getStringProperty("NAIMEN"));
-		stampMap.put("OBOZNACH", specification.settings.getStringProperty("OBOZNACH"));
-		stampMap.put("PERVPRIM", specification.settings.getStringProperty("PERVPRIM"));
-		stampMap.put("LITERA1", specification.settings.getStringProperty("LITERA1"));
-		stampMap.put("LITERA2", specification.settings.getStringProperty("LITERA2"));
-		stampMap.put("LITERA3", specification.settings.getStringProperty("LITERA3"));
+		stampMap.put("NAIMEN", Specification.settings.getStringProperty("NAIMEN"));
+		stampMap.put("OBOZNACH", Specification.settings.getStringProperty("OBOZNACH"));
+		stampMap.put("PERVPRIM", Specification.settings.getStringProperty("PERVPRIM"));
+		stampMap.put("LITERA1", Specification.settings.getStringProperty("LITERA1"));
+		stampMap.put("LITERA2", Specification.settings.getStringProperty("LITERA2"));
+		stampMap.put("LITERA3", Specification.settings.getStringProperty("LITERA3"));
 		
+		stampMap.put("RAZR", Specification.settings.getStringProperty("Designer")==null?"":Specification.settings.getStringProperty("Designer"));
+		stampMap.put("PROV", Specification.settings.getStringProperty("Check")==null?"":Specification.settings.getStringProperty("Check"));
+		stampMap.put("ADDCHECKER", Specification.settings.getStringProperty("AddCheck")==null?"":Specification.settings.getStringProperty("AddCheck"));
+		stampMap.put("ADDCHECKERPOST", Specification.settings.getStringProperty("AddCheckPost")==null?"":Specification.settings.getStringProperty("AddCheckPost"));
+		stampMap.put("NORM", Specification.settings.getStringProperty("NCheck")==null?"":Specification.settings.getStringProperty("NCheck"));
+		stampMap.put("UTV", Specification.settings.getStringProperty("Approver")==null?"":Specification.settings.getStringProperty("Approver"));
+		stampMap.put("RAZR", Specification.settings.getStringProperty("Designer")==null?"":Specification.settings.getStringProperty("Designer"));
+		
+		/*stampMap.put("CRTDATE", Specification.settings.getStringProperty("DesignDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("DesignDate")));
+		stampMap.put("CHKDATE", Specification.settings.getStringProperty("CheckDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("CheckDate")));
+		stampMap.put("AddCheckerPost", Specification.settings.getStringProperty("AddCheckDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("AddCheckDate")));
+		stampMap.put("CTRLDATE", Specification.settings.getStringProperty("NCheckDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("NCheckDate")));
+		stampMap.put("APRDATE", Specification.settings.getStringProperty("ApproveDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("ApproveDate")));
+		*/
 		emptyLine = (new BlockLine()).build();
 		emptyLine.setQuantity("-1.0");
 		try{

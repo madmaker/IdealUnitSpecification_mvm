@@ -20,4 +20,5 @@ Require-Bundle: org.eclipse.ui,
  ru.idealplm.xml2pdf2;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Import-Package: ru.idealplm.xml2pdf2.handlers
+Import-Package: com.teamcenter.rac.form.datebutton,
+ ru.idealplm.xml2pdf2.handlers

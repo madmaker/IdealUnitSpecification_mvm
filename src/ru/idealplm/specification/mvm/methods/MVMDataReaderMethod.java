@@ -298,6 +298,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 		
 			readSpecifiedItemData(topBOMLine);
 			readTopIRDocuments(topBOMLine);
+			readGeneralNoteForm();
 
 			if(childBOMLines.length>0){
 				bomQueue = new ArrayBlockingQueue<AIFComponentContext>(childBOMLines.length);
@@ -468,6 +469,41 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			e.printStackTrace();
 		}
 		
+	}
+	
+	private void readGeneralNoteForm(){
+		try{
+			System.out.println("+++++GENERAL NOTE FORM!!!!");
+			TCComponentItemRevision specIR = specification.getSpecificationItemRevision();
+			TCComponent noteForm;
+			TCComponent tempComp;
+			if(specIR!=null){
+				System.out.println("+++++NOT NULL!!!!");
+				for(AIFComponentContext compCont:specIR.getChildren()){
+					tempComp = (TCComponent)compCont.getComponent();
+					System.out.println("+++++FOUND TYPE!!!!" + tempComp.getType());
+					if(tempComp.getType().equals("M9_GeneralNoteForm")){
+						System.out.println("+++++FOUND FORM!!!!");
+						noteForm = tempComp;
+						Specification.settings.addStringProperty("Designer", tempComp.getProperty("m9_Designer"));
+						Specification.settings.addStringProperty("DesignDate", tempComp.getProperty("m9_DesignDate"));
+						Specification.settings.addStringProperty("Check", tempComp.getProperty("m9_Check"));
+						Specification.settings.addStringProperty("CheckDate", tempComp.getProperty("m9_CheckDate"));
+						Specification.settings.addStringProperty("AddCheckPost", tempComp.getProperty("m9_AddCheckPost"));
+						Specification.settings.addStringProperty("AddCheck", tempComp.getProperty("m9_AddCheck"));
+						Specification.settings.addStringProperty("AddCheckDate", tempComp.getProperty("m9_AddCheckDate"));
+						Specification.settings.addStringProperty("NCheck", tempComp.getProperty("m9_NCheck"));
+						Specification.settings.addStringProperty("NCheckDate", tempComp.getProperty("m9_NCheckDate"));
+						Specification.settings.addStringProperty("Approver", tempComp.getProperty("m9_Approver"));
+						Specification.settings.addStringProperty("Approvedate", tempComp.getProperty("m9_ApproveDate"));
+						System.out.println("~~~DATE:"+tempComp.getProperty("m9_DesignDate"));
+						return;
+					}
+				}
+			}
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
 	}
 	
 	private void readSpecifiedItemData(TCComponentBOMLine bomLine){

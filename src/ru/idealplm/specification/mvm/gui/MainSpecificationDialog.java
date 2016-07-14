@@ -1,6 +1,5 @@
 package ru.idealplm.specification.mvm.gui;
 
-import java.util.Iterator;
 import java.util.ListIterator;
 
 import org.eclipse.swt.widgets.Dialog;
@@ -8,30 +7,45 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 
 import ru.idealplm.specification.mvm.util.PerfTrack;
 import ru.idealplm.utils.specification.Block;
 import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
+import ru.idealplm.utils.specification.util.GeneralUtils;
+
+import org.eclipse.swt.widgets.DateTime;
+
+import com.teamcenter.rac.util.DateButton;
 
 public class MainSpecificationDialog extends Dialog {
 
 	protected Object result;
 	protected Shell shlCgtwbabrfwbz;
+	private TabFolder tabFolder;
+	private TabItem tabMain;
+	private TabItem tabSignatures;
+	private Composite compositeMain;
+	private Composite compositeSignatures;
+
 	private Table table;
 	private Text text_AddedText;
 	private Text text_PrimaryApp;
@@ -39,6 +53,17 @@ public class MainSpecificationDialog extends Dialog {
 	private Text text_Litera2;
 	private Text text_Litera3;
 	private Specification specification;
+	private Text textDesigner;
+	private Text textCheck;
+	private Text textAddCheckPost;
+	private Text textAddCheck;
+	private Text textNCheck;
+	private Text textApprover;
+	private DateButton dateDesign;
+	private DateTime dateCheck;
+	private DateTime dateAddCheck;
+	private DateTime dateNCheck;
+	private DateTime dateApprove;
 	
 
 	/**
@@ -50,7 +75,7 @@ public class MainSpecificationDialog extends Dialog {
 		super(parent, style);
 		PerfTrack.prepare("Dialog constructor");
 		this.specification = specification;
-		setText("SWT Dialog");
+		//setText("SWT Dialog");
 		PerfTrack.addToLog("Dialog constructor");
 	}
 
@@ -61,8 +86,9 @@ public class MainSpecificationDialog extends Dialog {
 	public Object open() {
 		createContents();
 		fillContents();
+		shlCgtwbabrfwbz.setLayout(new FillLayout());
+		//shlCgtwbabrfwbz.layout();
 		shlCgtwbabrfwbz.open();
-		shlCgtwbabrfwbz.layout();
 		Display display = getParent().getDisplay();
 		while (!shlCgtwbabrfwbz.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -94,17 +120,35 @@ public class MainSpecificationDialog extends Dialog {
 			if(block.getBlockType().equals("Default") && iterator.nextIndex()!=blockList.size()){
 				if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
 					blockItem = new TableItem(table, SWT.NONE);
-					blockItem.setText(new String[]{"Устанавливается по " + specification.settings.getStringProperty("MEDocumentId")});
+					blockItem.setText(new String[]{"Устанавливается по " + Specification.settings.getStringProperty("MEDocumentId")});
 					blockItem.setGrayed(true);
 				}
 			}
 		}
-		text_AddedText.setText(specification.settings.getStringProperty("AddedText")==null?"":specification.settings.getStringProperty("AddedText"));
-		text_Litera1.setText(specification.settings.getStringProperty("LITERA1")==null?"":specification.settings.getStringProperty("LITERA1"));
-		text_Litera2.setText(specification.settings.getStringProperty("LITERA2")==null?"":specification.settings.getStringProperty("LITERA2"));
-		text_Litera3.setText(specification.settings.getStringProperty("LITERA3")==null?"":specification.settings.getStringProperty("LITERA3"));
-		text_PrimaryApp.setText(specification.settings.getStringProperty("PERVPRIM")==null?"":specification.settings.getStringProperty("PERVPRIM"));
+		text_AddedText.setText(Specification.settings.getStringProperty("AddedText")==null?"":Specification.settings.getStringProperty("AddedText"));
+		text_Litera1.setText(Specification.settings.getStringProperty("LITERA1")==null?"":Specification.settings.getStringProperty("LITERA1"));
+		text_Litera2.setText(Specification.settings.getStringProperty("LITERA2")==null?"":Specification.settings.getStringProperty("LITERA2"));
+		text_Litera3.setText(Specification.settings.getStringProperty("LITERA3")==null?"":Specification.settings.getStringProperty("LITERA3"));
+		text_PrimaryApp.setText(Specification.settings.getStringProperty("PERVPRIM")==null?"":Specification.settings.getStringProperty("PERVPRIM"));
+		
+		textDesigner.setText(Specification.settings.getStringProperty("Designer")==null?"":Specification.settings.getStringProperty("Designer"));
+		textCheck.setText(Specification.settings.getStringProperty("Check")==null?"":Specification.settings.getStringProperty("Check"));
+		textNCheck.setText(Specification.settings.getStringProperty("NCheck")==null?"":Specification.settings.getStringProperty("NCheck"));
+		textApprover.setText(Specification.settings.getStringProperty("Approver")==null?"":Specification.settings.getStringProperty("Approver"));
+		textAddCheckPost.setText(Specification.settings.getStringProperty("AddCheckPost")==null?"":Specification.settings.getStringProperty("AddCheckPost"));
+		textAddCheck.setText(Specification.settings.getStringProperty("AddCheck")==null?"":Specification.settings.getStringProperty("AddCheck"));
+		
+		//setDate(dateDesign, Specification.settings.getStringProperty("DesignDate"));
+		
 		PerfTrack.addToLog("Filling contents");
+	}
+	
+	void setDate(DateTime widget, String date){
+		if(date==null || date.trim().isEmpty()) return;
+		String parsedDate = GeneralUtils.parseDateFromTC(date);
+		widget.setDate(Integer.parseInt(parsedDate.substring(0, parsedDate.indexOf("."))), 
+				Integer.parseInt(parsedDate.substring(parsedDate.indexOf("."), parsedDate.lastIndexOf("."))), 
+				Integer.parseInt(parsedDate.substring(parsedDate.lastIndexOf("."))));
 	}
 	
 	/**
@@ -112,21 +156,98 @@ public class MainSpecificationDialog extends Dialog {
 	 */
 	private void createContents() {
 		PerfTrack.prepare("Creating contents");
-		shlCgtwbabrfwbz = new Shell(getParent(), getStyle());
-		shlCgtwbabrfwbz.setSize(450, 580);
+		shlCgtwbabrfwbz = new Shell();
+		shlCgtwbabrfwbz.setSize(470, 595);
 		shlCgtwbabrfwbz.setText("\u0421\u043F\u0435\u0446\u0438\u0444\u0438\u043A\u0430\u0446\u0438\u044F");
+		tabFolder = new TabFolder(shlCgtwbabrfwbz, SWT.NONE);
+		tabMain = new TabItem(tabFolder, SWT.BORDER);
+		tabSignatures = new TabItem(tabFolder, SWT.BORDER);
+		compositeMain = new Composite(tabFolder, SWT.NONE);
+		compositeSignatures = new Composite(tabFolder, SWT.NONE);
+		compositeMain.setLayout(null);
+		compositeSignatures.setLayout(null);
+		tabMain.setControl(compositeMain);
+		tabSignatures.setControl(compositeSignatures);
 		
-		final Button button_Renumerize = new Button(shlCgtwbabrfwbz, SWT.CHECK);
+		Label labelDesigner = new Label(compositeSignatures, SWT.NONE);
+		labelDesigner.setText("\u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0430\u043B");
+		labelDesigner.setBounds(37, 47, 65, 13);
+		
+		textDesigner = new Text(compositeSignatures, SWT.BORDER);
+		textDesigner.setBounds(144, 44, 110, 23);
+		
+		Label labelCheck = new Label(compositeSignatures, SWT.NONE);
+		labelCheck.setBounds(37, 88, 49, 13);
+		labelCheck.setText("\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u043B");
+		
+		textCheck = new Text(compositeSignatures, SWT.BORDER);
+		textCheck.setBounds(144, 85, 110, 23);
+		
+		Label labelAddCheck = new Label(compositeSignatures, SWT.NONE);
+		labelAddCheck.setBounds(170, 25, 49, 13);
+		labelAddCheck.setText("\u0424\u0430\u043C\u0438\u043B\u0438\u044F");
+		
+		textAddCheck = new Text(compositeSignatures, SWT.BORDER);
+		textAddCheck.setBounds(144, 128, 110, 23);
+		
+		Label labelNCheck = new Label(compositeSignatures, SWT.NONE);
+		labelNCheck.setBounds(37, 173, 65, 13);
+		labelNCheck.setText("\u041D.\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044C");
+		
+		//dateDesign = new DateButton(compositeSignatures, SWT.BORDER);
+		//dateDesign.setBounds(283, 44, 77, 23);
+		Composite dateDesignComp = new Composite(compositeSignatures, SWT.EMBEDDED); 
+		dateDesignComp.setBounds(283, 44, 100, 23);
+		java.awt.Frame dateDesignFrame = SWT_AWT.new_Frame(dateDesignComp);
+		java.awt.Panel dateDesignPanel = new java.awt.Panel(new java.awt.BorderLayout());
+		dateDesignFrame.add(dateDesignPanel);
+		dateDesign = new DateButton();
+		dateDesign.setDoubleBuffered(true);
+		dateDesignPanel.add(dateDesign);
+		
+		textAddCheckPost = new Text(compositeSignatures, SWT.BORDER);
+		textAddCheckPost.setBounds(37, 128, 92, 23);
+		
+		Label labelApprover = new Label(compositeSignatures, SWT.NONE);
+		labelApprover.setBounds(37, 215, 49, 13);
+		labelApprover.setText("\u0423\u0442\u0432\u0435\u0440\u0434\u0438\u043B");
+		
+		Label label_3 = new Label(compositeSignatures, SWT.NONE);
+		label_3.setBounds(299, 25, 49, 13);
+		label_3.setText("\u0414\u0430\u0442\u0430");
+		
+		textNCheck = new Text(compositeSignatures, SWT.BORDER);
+		textNCheck.setBounds(144, 170, 110, 23);
+		
+		textApprover = new Text(compositeSignatures, SWT.BORDER);
+		textApprover.setBounds(144, 212, 110, 23);
+		
+		dateCheck = new DateTime(compositeSignatures, SWT.BORDER);
+		dateCheck.setBounds(283, 85, 77, 23);
+		
+		dateAddCheck = new DateTime(compositeSignatures, SWT.BORDER);
+		dateAddCheck.setBounds(283, 128, 77, 23);
+		
+		dateNCheck = new DateTime(compositeSignatures, SWT.BORDER);
+		dateNCheck.setBounds(283, 170, 77, 23);
+		
+		dateApprove = new DateTime(compositeSignatures, SWT.BORDER);
+		dateApprove.setBounds(283, 212, 77, 23);
+	    tabMain.setText("Настройки");
+	    tabSignatures.setText("Хуи с горы");
+
+		
+		final Button button_Renumerize = new Button(compositeMain, SWT.CHECK);
 		button_Renumerize.setBounds(10, 10, 213, 16);
 		button_Renumerize.setText("\u041F\u0435\u0440\u0435\u043D\u0443\u043C\u0435\u0440\u043E\u0432\u0430\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438");
-		button_Renumerize.setEnabled(specification.settings.getBooleanProperty("canRenumerize"));
+		button_Renumerize.setEnabled(Specification.settings.getBooleanProperty("canRenumerize"));
 		if(!button_Renumerize.isEnabled()) {
 			button_Renumerize.setToolTipText("Недоступно, указан запрет смены позиций.");
 		} else {
 			button_Renumerize.setToolTipText("Перенумерация позиций с возможностью резерва строк и позиций.");
 		}
 		
-		Group group = new Group(shlCgtwbabrfwbz, SWT.NONE);
+		Group group = new Group(compositeMain, SWT.NONE);
 		group.setText("\u0420\u0435\u0437\u0435\u0440\u0432 \u043F\u043E\u0437\u0438\u0446\u0438\u0439 \u043F\u043E \u0440\u0430\u0437\u0434\u0435\u043B\u0430\u043C");
 		group.setBounds(10, 32, 424, 220);
 		
@@ -229,65 +350,77 @@ public class MainSpecificationDialog extends Dialog {
 		tableColumn_3.setWidth(93);
 		tableColumn_3.setText("\u0418\u043D\u0442\u0435\u0440\u0432\u0430\u043B \u043F\u043E\u0437.");
 		
-		final Button button_ReadLastRevPos = new Button(shlCgtwbabrfwbz, SWT.CHECK);
+		final Button button_ReadLastRevPos = new Button(compositeMain, SWT.CHECK);
 		button_ReadLastRevPos.setText("\u0417\u0430\u0447\u0438\u0442\u0430\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438 \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0439 \u0440\u0435\u0432\u0438\u0437\u0438\u0438");
 		button_ReadLastRevPos.setBounds(10, 258, 225, 16);
-		button_ReadLastRevPos.setEnabled(specification.settings.getBooleanProperty("canReadLastRevPos"));
+		button_ReadLastRevPos.setEnabled(Specification.settings.getBooleanProperty("canReadLastRevPos"));
 		
-		final Button button_UseReservePos = new Button(shlCgtwbabrfwbz, SWT.CHECK);
+		final Button button_UseReservePos = new Button(compositeMain, SWT.CHECK);
 		button_UseReservePos.setText("\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C \u0440\u0435\u0437\u0435\u0440\u0432 \u043F\u043E\u0437\u0438\u0446\u0438\u0439");
 		button_UseReservePos.setBounds(10, 282, 225, 16);
-		button_UseReservePos.setEnabled(specification.settings.getBooleanProperty("canUseReservePos"));
+		button_UseReservePos.setEnabled(Specification.settings.getBooleanProperty("canUseReservePos"));
 		
-		Label label = new Label(shlCgtwbabrfwbz, SWT.NONE);
+		Label label = new Label(compositeMain, SWT.NONE);
 		label.setBounds(10, 317, 136, 13);
 		label.setText("\u0414\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442");
 		
-		text_AddedText = new Text(shlCgtwbabrfwbz, SWT.BORDER | SWT.V_SCROLL);
+		text_AddedText = new Text(compositeMain, SWT.BORDER | SWT.V_SCROLL);
 		text_AddedText.setBounds(10, 336, 424, 78);
 		
-		text_PrimaryApp = new Text(shlCgtwbabrfwbz, SWT.BORDER);
+		text_PrimaryApp = new Text(compositeMain, SWT.BORDER);
 		text_PrimaryApp.setBounds(10, 437, 154, 19);
 		
-		Label label_1 = new Label(shlCgtwbabrfwbz, SWT.NONE);
+		Label label_1 = new Label(compositeMain, SWT.NONE);
 		label_1.setText("\u041F\u0435\u0440\u0432\u0438\u0447\u043D\u0430\u044F \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u043C\u043E\u0441\u0442\u044C");
 		label_1.setBounds(10, 420, 136, 13);
 		
-		Label label_litera_1 = new Label(shlCgtwbabrfwbz, SWT.NONE);
+		Label label_litera_1 = new Label(compositeMain, SWT.NONE);
 		label_litera_1.setText("\u041B\u0438\u0442\u0435\u0440\u0430 1");
 		label_litera_1.setBounds(10, 460, 76, 13);
 		
-		text_Litera1 = new Text(shlCgtwbabrfwbz, SWT.BORDER);
+		text_Litera1 = new Text(compositeMain, SWT.BORDER);
 		text_Litera1.setBounds(10, 477, 76, 19);
 		
-		Label label_litera_2 = new Label(shlCgtwbabrfwbz, SWT.NONE);
+		Label label_litera_2 = new Label(compositeMain, SWT.NONE);
 		label_litera_2.setText("\u041B\u0438\u0442\u0435\u0440\u0430 2");
 		label_litera_2.setBounds(96, 460, 76, 13);
 		
-		text_Litera2 = new Text(shlCgtwbabrfwbz, SWT.BORDER);
+		text_Litera2 = new Text(compositeMain, SWT.BORDER);
 		text_Litera2.setBounds(96, 477, 76, 19);
 		
-		Label label_litera_3 = new Label(shlCgtwbabrfwbz, SWT.NONE);
+		Label label_litera_3 = new Label(compositeMain, SWT.NONE);
 		label_litera_3.setText("\u041B\u0438\u0442\u0435\u0440\u0430 3");
 		label_litera_3.setBounds(182, 460, 76, 13);
 		
-		text_Litera3 = new Text(shlCgtwbabrfwbz, SWT.BORDER);
+		text_Litera3 = new Text(compositeMain, SWT.BORDER);
 		text_Litera3.setBounds(182, 477, 76, 19);
 		
-		Button btnOk = new Button(shlCgtwbabrfwbz, SWT.NONE);
+		Button btnOk = new Button(compositeMain, SWT.NONE);
 		btnOk.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				specification.isOkPressed = true;
-				specification.settings.addBooleanProperty("doRenumerize", button_Renumerize.getSelection());
-				specification.settings.addBooleanProperty("doReadLastRevPos", button_ReadLastRevPos.getSelection());
-				specification.settings.addBooleanProperty("doUseReservePos", button_UseReservePos.getSelection());
+				Specification.settings.addBooleanProperty("doRenumerize", button_Renumerize.getSelection());
+				Specification.settings.addBooleanProperty("doReadLastRevPos", button_ReadLastRevPos.getSelection());
+				Specification.settings.addBooleanProperty("doUseReservePos", button_UseReservePos.getSelection());
 				
-				specification.settings.addStringProperty("AddedText", text_AddedText.getText());
-				specification.settings.addStringProperty("LITERA1", text_Litera1.getText());
-				specification.settings.addStringProperty("LITERA2", text_Litera2.getText());
-				specification.settings.addStringProperty("LITERA3", text_Litera3.getText());
-				specification.settings.addStringProperty("PERVPRIM", text_PrimaryApp.getText());
+				Specification.settings.addStringProperty("AddedText", text_AddedText.getText());
+				Specification.settings.addStringProperty("LITERA1", text_Litera1.getText());
+				Specification.settings.addStringProperty("LITERA2", text_Litera2.getText());
+				Specification.settings.addStringProperty("LITERA3", text_Litera3.getText());
+				Specification.settings.addStringProperty("PERVPRIM", text_PrimaryApp.getText());
+				
+				Specification.settings.addStringProperty("Designer", textDesigner.getText());
+				Specification.settings.addStringProperty("DesignDate", dateDesign.toString());
+				Specification.settings.addStringProperty("Check", textCheck.getText());
+				Specification.settings.addStringProperty("CheckDate", dateCheck.toString());
+				Specification.settings.addStringProperty("AddCheckPost", textAddCheckPost.getText());
+				Specification.settings.addStringProperty("AddCheck", textAddCheck.getText());
+				Specification.settings.addStringProperty("AddCheckDate", dateAddCheck.toString());
+				Specification.settings.addStringProperty("NCheck", textNCheck.getText());
+				Specification.settings.addStringProperty("NCheckDate", dateNCheck.toString());
+				Specification.settings.addStringProperty("Approver", textApprover.getText());
+				Specification.settings.addStringProperty("ApproveDate", dateApprove.toString());
 				
 				shlCgtwbabrfwbz.dispose();
 				System.out.println("OK!");
@@ -304,7 +437,7 @@ public class MainSpecificationDialog extends Dialog {
 			}
 		});
 		
-		Button btnCancel = new Button(shlCgtwbabrfwbz, SWT.NONE);
+		Button btnCancel = new Button(compositeMain, SWT.NONE);
 		btnCancel.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
