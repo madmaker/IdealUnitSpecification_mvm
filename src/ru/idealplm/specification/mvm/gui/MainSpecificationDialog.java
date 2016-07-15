@@ -1,5 +1,7 @@
 package ru.idealplm.specification.mvm.gui;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ListIterator;
 
 import org.eclipse.swt.widgets.Dialog;
@@ -35,6 +37,7 @@ import ru.idealplm.utils.specification.util.GeneralUtils;
 import org.eclipse.swt.widgets.DateTime;
 
 import com.teamcenter.rac.util.DateButton;
+import com.teamcenter.rac.util.date.*;
 
 public class MainSpecificationDialog extends Dialog {
 
@@ -59,12 +62,6 @@ public class MainSpecificationDialog extends Dialog {
 	private Text textAddCheck;
 	private Text textNCheck;
 	private Text textApprover;
-	private DateButton dateDesign;
-	private DateTime dateCheck;
-	private DateTime dateAddCheck;
-	private DateTime dateNCheck;
-	private DateTime dateApprove;
-	
 
 	/**
 	 * Create the dialog.
@@ -113,9 +110,9 @@ public class MainSpecificationDialog extends Dialog {
 			System.out.println("In fill contents: " + block.getBlockTitle() + "=" + block.getListOfLines().size());
 			blockItem = new TableItem(table, SWT.NONE);
 			if(!block.getBlockTitle().equals("Документация")){
-				blockItem.setText(new String[]{block.getBlockTitle(), "0", "0", "0"});
+				blockItem.setText(new String[]{block.getBlockTitle(), String.valueOf(block.getReservePosNum()), String.valueOf(block.getReserveLinesNum()), String.valueOf(block.getIntervalPosNum())});
 			} else {
-				blockItem.setText(new String[]{block.getBlockTitle(), "0", "0", "0"});
+				blockItem.setText(new String[]{block.getBlockTitle(), String.valueOf(block.getReservePosNum()), String.valueOf(block.getReserveLinesNum()), String.valueOf(block.getIntervalPosNum())});
 			}
 			if(block.getBlockType().equals("Default") && iterator.nextIndex()!=blockList.size()){
 				if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
@@ -137,18 +134,8 @@ public class MainSpecificationDialog extends Dialog {
 		textApprover.setText(Specification.settings.getStringProperty("Approver")==null?"":Specification.settings.getStringProperty("Approver"));
 		textAddCheckPost.setText(Specification.settings.getStringProperty("AddCheckPost")==null?"":Specification.settings.getStringProperty("AddCheckPost"));
 		textAddCheck.setText(Specification.settings.getStringProperty("AddCheck")==null?"":Specification.settings.getStringProperty("AddCheck"));
-		
-		//setDate(dateDesign, Specification.settings.getStringProperty("DesignDate"));
-		
+
 		PerfTrack.addToLog("Filling contents");
-	}
-	
-	void setDate(DateTime widget, String date){
-		if(date==null || date.trim().isEmpty()) return;
-		String parsedDate = GeneralUtils.parseDateFromTC(date);
-		widget.setDate(Integer.parseInt(parsedDate.substring(0, parsedDate.indexOf("."))), 
-				Integer.parseInt(parsedDate.substring(parsedDate.indexOf("."), parsedDate.lastIndexOf("."))), 
-				Integer.parseInt(parsedDate.substring(parsedDate.lastIndexOf("."))));
 	}
 	
 	/**
@@ -184,7 +171,7 @@ public class MainSpecificationDialog extends Dialog {
 		textCheck.setBounds(144, 85, 110, 23);
 		
 		Label labelAddCheck = new Label(compositeSignatures, SWT.NONE);
-		labelAddCheck.setBounds(170, 25, 49, 13);
+		labelAddCheck.setBounds(173, 20, 49, 13);
 		labelAddCheck.setText("\u0424\u0430\u043C\u0438\u043B\u0438\u044F");
 		
 		textAddCheck = new Text(compositeSignatures, SWT.BORDER);
@@ -194,17 +181,6 @@ public class MainSpecificationDialog extends Dialog {
 		labelNCheck.setBounds(37, 173, 65, 13);
 		labelNCheck.setText("\u041D.\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044C");
 		
-		//dateDesign = new DateButton(compositeSignatures, SWT.BORDER);
-		//dateDesign.setBounds(283, 44, 77, 23);
-		Composite dateDesignComp = new Composite(compositeSignatures, SWT.EMBEDDED); 
-		dateDesignComp.setBounds(283, 44, 100, 23);
-		java.awt.Frame dateDesignFrame = SWT_AWT.new_Frame(dateDesignComp);
-		java.awt.Panel dateDesignPanel = new java.awt.Panel(new java.awt.BorderLayout());
-		dateDesignFrame.add(dateDesignPanel);
-		dateDesign = new DateButton();
-		dateDesign.setDoubleBuffered(true);
-		dateDesignPanel.add(dateDesign);
-		
 		textAddCheckPost = new Text(compositeSignatures, SWT.BORDER);
 		textAddCheckPost.setBounds(37, 128, 92, 23);
 		
@@ -212,29 +188,14 @@ public class MainSpecificationDialog extends Dialog {
 		labelApprover.setBounds(37, 215, 49, 13);
 		labelApprover.setText("\u0423\u0442\u0432\u0435\u0440\u0434\u0438\u043B");
 		
-		Label label_3 = new Label(compositeSignatures, SWT.NONE);
-		label_3.setBounds(299, 25, 49, 13);
-		label_3.setText("\u0414\u0430\u0442\u0430");
-		
 		textNCheck = new Text(compositeSignatures, SWT.BORDER);
 		textNCheck.setBounds(144, 170, 110, 23);
 		
 		textApprover = new Text(compositeSignatures, SWT.BORDER);
 		textApprover.setBounds(144, 212, 110, 23);
 		
-		dateCheck = new DateTime(compositeSignatures, SWT.BORDER);
-		dateCheck.setBounds(283, 85, 77, 23);
-		
-		dateAddCheck = new DateTime(compositeSignatures, SWT.BORDER);
-		dateAddCheck.setBounds(283, 128, 77, 23);
-		
-		dateNCheck = new DateTime(compositeSignatures, SWT.BORDER);
-		dateNCheck.setBounds(283, 170, 77, 23);
-		
-		dateApprove = new DateTime(compositeSignatures, SWT.BORDER);
-		dateApprove.setBounds(283, 212, 77, 23);
 	    tabMain.setText("Настройки");
-	    tabSignatures.setText("Хуи с горы");
+	    tabSignatures.setText("\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u0442\u044B");
 
 		
 		final Button button_Renumerize = new Button(compositeMain, SWT.CHECK);
@@ -411,16 +372,39 @@ public class MainSpecificationDialog extends Dialog {
 				Specification.settings.addStringProperty("PERVPRIM", text_PrimaryApp.getText());
 				
 				Specification.settings.addStringProperty("Designer", textDesigner.getText());
-				Specification.settings.addStringProperty("DesignDate", dateDesign.toString());
 				Specification.settings.addStringProperty("Check", textCheck.getText());
-				Specification.settings.addStringProperty("CheckDate", dateCheck.toString());
 				Specification.settings.addStringProperty("AddCheckPost", textAddCheckPost.getText());
 				Specification.settings.addStringProperty("AddCheck", textAddCheck.getText());
-				Specification.settings.addStringProperty("AddCheckDate", dateAddCheck.toString());
 				Specification.settings.addStringProperty("NCheck", textNCheck.getText());
-				Specification.settings.addStringProperty("NCheckDate", dateNCheck.toString());
 				Specification.settings.addStringProperty("Approver", textApprover.getText());
-				Specification.settings.addStringProperty("ApproveDate", dateApprove.toString());
+				
+				BlockList blockList = specification.getBlockList();
+				for(int i = 0; i < table.getItemCount(); i++){
+					TableItem tableItem = table.getItem(i);
+					blockList.get(i).setReservePosNum(Integer.parseInt(tableItem.getText(1)));
+					blockList.get(i).setReserveLinesNum(Integer.parseInt(tableItem.getText(2)));
+					blockList.get(i).setIntervalPosNum(Integer.parseInt(tableItem.getText(3)));
+				}
+				/*ListIterator<Block> iterator = blockList.listIterator();
+				Block block;
+				TableItem blockItem;
+				while(iterator.hasNext()){
+					block = iterator.next();
+					System.out.println("LOL+"+block.getReservePosNum());
+					blockItem = new TableItem(table, SWT.NONE);
+					if(!block.getBlockTitle().equals("Документация")){
+						blockItem.setText(new String[]{block.getBlockTitle(), String.valueOf(block.getReservePosNum()), String.valueOf(block.getReserveLinesNum()), String.valueOf(block.getIntervalPosNum())});
+					} else {
+						blockItem.setText(new String[]{block.getBlockTitle(), String.valueOf(block.getReservePosNum()), String.valueOf(block.getReserveLinesNum()), String.valueOf(block.getIntervalPosNum())});
+					}
+					if(block.getBlockType().equals("Default") && iterator.nextIndex()!=blockList.size()){
+						if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
+							blockItem = new TableItem(table, SWT.NONE);
+							blockItem.setText(new String[]{"Устанавливается по " + Specification.settings.getStringProperty("MEDocumentId")});
+							blockItem.setGrayed(true);
+						}
+					}
+				}*/
 				
 				shlCgtwbabrfwbz.dispose();
 				System.out.println("OK!");

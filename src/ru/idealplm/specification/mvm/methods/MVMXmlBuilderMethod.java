@@ -93,12 +93,6 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 		stampMap.put("UTV", Specification.settings.getStringProperty("Approver")==null?"":Specification.settings.getStringProperty("Approver"));
 		stampMap.put("RAZR", Specification.settings.getStringProperty("Designer")==null?"":Specification.settings.getStringProperty("Designer"));
 		
-		/*stampMap.put("CRTDATE", Specification.settings.getStringProperty("DesignDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("DesignDate")));
-		stampMap.put("CHKDATE", Specification.settings.getStringProperty("CheckDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("CheckDate")));
-		stampMap.put("AddCheckerPost", Specification.settings.getStringProperty("AddCheckDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("AddCheckDate")));
-		stampMap.put("CTRLDATE", Specification.settings.getStringProperty("NCheckDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("NCheckDate")));
-		stampMap.put("APRDATE", Specification.settings.getStringProperty("ApproveDate")==null?"":GeneralUtils.parseDate(Specification.settings.getStringProperty("ApproveDate")));
-		*/
 		emptyLine = (new BlockLine()).build();
 		emptyLine.setQuantity("-1.0");
 		try{

@@ -107,6 +107,8 @@ public class SampleHandler extends AbstractHandler {
 					return null;
 				}
 				
+				readSettings(specification.getBlockList());
+				
 				PerfTrack.prepare("Creating dialog");
 				MainSpecificationDialog mainDialog = new MainSpecificationDialog(HandlerUtil.getActiveShell(event).getShell(), SWT.CLOSE, specification);
 				PerfTrack.addToLog("Creating dialog");
@@ -118,6 +120,8 @@ public class SampleHandler extends AbstractHandler {
 				}
 				
 				if (!specification.isOkPressed) { return null; }
+				
+				saveSettings(specification.getBlockList());
 				
 				if(Specification.settings.getBooleanProperty("doRenumerize")){
 					PerfTrack.prepare("Locking BOM");
@@ -159,5 +163,35 @@ public class SampleHandler extends AbstractHandler {
 			}
 		}
 		return null;
+	}
+	
+	void readSettings(BlockList blockList){
+		String settingsString = Specification.settings.getStringProperty("blockSettings");
+		System.out.println("BLOCK_SETTINGS"+settingsString);
+		if(settingsString==null || settingsString.isEmpty()) return;
+		for(String blockProps:settingsString.split("&")){
+			System.out.println(blockProps);
+			String[] props = blockProps.split(":");
+			System.out.println(props[0]);
+			Block block = blockList.getBlock(BlockContentType.valueOf(props[0]), props[1]);
+			if(block!=null){
+				block.setReservePosNum(Integer.parseInt(props[2]));
+				block.setReserveLinesNum(Integer.parseInt(props[3]));
+				block.setIntervalPosNum(Integer.parseInt(props[4]));
+			}
+		}
+	}
+	
+	void saveSettings(BlockList blockList){
+		String settingsString = "";
+		String del = ":";
+		for(Block block:blockList){
+			settingsString+=block.getBlockContentType()+del+block.getBlockType()+del+block.getReservePosNum()+del+block.getReserveLinesNum()+del+block.getIntervalPosNum();
+			settingsString+="&";
+		}
+		if(settingsString.endsWith("&")){
+			settingsString = settingsString.substring(0, settingsString.length()-1);
+		}
+		Specification.settings.addStringProperty("blockSettings", settingsString);
 	}
 }

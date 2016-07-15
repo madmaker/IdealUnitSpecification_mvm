@@ -84,7 +84,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					atLeastOnePosIsFixed = true;
 				}
 				
-				System.out.println("_processing by processor " + id + " *** *** " + bomLine.getItem().getType() + " --> " + Arrays.toString(properties));
+				//System.out.println("_processing by processor " + id + " *** *** " + bomLine.getItem().getType() + " --> " + Arrays.toString(properties));
 				validateBOMLineAttributess(properties[0], properties[5], properties[6]);
 				
 				MVMBlockLineHandler blockLineHandler = new MVMBlockLineHandler();
@@ -333,9 +333,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				specification.getErrorList().addError(new Error("ERROR", "Отсутствуют разделы спецификации."));
 			}
 			
-			specification.settings.addBooleanProperty("canRenumerize", !atLeastOnePosIsFixed);
-			specification.settings.addBooleanProperty("canUseReservePos", atLeastOnePosIsFixed);
-			specification.settings.addBooleanProperty("canReadLastRevPos", !atLeastOnePosIsFixed);
+			Specification.settings.addBooleanProperty("canRenumerize", !atLeastOnePosIsFixed);
+			Specification.settings.addBooleanProperty("canUseReservePos", atLeastOnePosIsFixed);
+			Specification.settings.addBooleanProperty("canReadLastRevPos", !atLeastOnePosIsFixed);
 			
 		} catch (Exception ex){
 			ex.printStackTrace();
@@ -348,7 +348,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			bl_sequence_noList.add(bl_sequence_no);
 			m9_IsFromEAsmList.add(m9_IsFromEAsm);
 			m9_DisableChangeFindNoList.add(m9_DisableChangeFindNo);
-			if(!m9_IsFromEAsm.isEmpty()) specification.settings.addBooleanProperty("hasMEBlocks", true);
+			if(!m9_IsFromEAsm.isEmpty()) Specification.settings.addBooleanProperty("hasMEBlocks", true);
 		} else {
 			if(!m9_IsFromEAsmList.get(posInList).equals(m9_IsFromEAsm)){
 				this.specification.getErrorList().addError(new Error("ERROR", "У вхождений с номером позиции "+bl_sequence_no+"разные значения свойства \"Позиция из МЭ\""));
@@ -391,10 +391,10 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				shortType = getType(id);
 				if(id.equals(IRid)){
 					specification.setSpecificationItemRevision(documentIR);
-					specification.settings.addStringProperty("LITERA1", documentIR.getProperty("m9_Litera1"));
-					specification.settings.addStringProperty("LITERA2", documentIR.getProperty("m9_Litera2"));
-					specification.settings.addStringProperty("LITERA3", documentIR.getProperty("m9_Litera3"));
-					specification.settings.addStringProperty("PERVPRIM", documentIR.getItem().getProperty("m9_PrimaryApp"));
+					Specification.settings.addStringProperty("LITERA1", documentIR.getProperty("m9_Litera1"));
+					Specification.settings.addStringProperty("LITERA2", documentIR.getProperty("m9_Litera2"));
+					Specification.settings.addStringProperty("LITERA3", documentIR.getProperty("m9_Litera3"));
+					Specification.settings.addStringProperty("PERVPRIM", documentIR.getItem().getProperty("m9_PrimaryApp"));
 					try{
 						for (AIFComponentContext compContext : documentIR.getChildren()){
 							if ((compContext.getComponent() instanceof TCComponentDataset) 
@@ -486,16 +486,11 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 						System.out.println("+++++FOUND FORM!!!!");
 						noteForm = tempComp;
 						Specification.settings.addStringProperty("Designer", tempComp.getProperty("m9_Designer"));
-						Specification.settings.addStringProperty("DesignDate", tempComp.getProperty("m9_DesignDate"));
 						Specification.settings.addStringProperty("Check", tempComp.getProperty("m9_Check"));
-						Specification.settings.addStringProperty("CheckDate", tempComp.getProperty("m9_CheckDate"));
 						Specification.settings.addStringProperty("AddCheckPost", tempComp.getProperty("m9_AddCheckPost"));
 						Specification.settings.addStringProperty("AddCheck", tempComp.getProperty("m9_AddCheck"));
-						Specification.settings.addStringProperty("AddCheckDate", tempComp.getProperty("m9_AddCheckDate"));
 						Specification.settings.addStringProperty("NCheck", tempComp.getProperty("m9_NCheck"));
-						Specification.settings.addStringProperty("NCheckDate", tempComp.getProperty("m9_NCheckDate"));
 						Specification.settings.addStringProperty("Approver", tempComp.getProperty("m9_Approver"));
-						Specification.settings.addStringProperty("Approvedate", tempComp.getProperty("m9_ApproveDate"));
 						System.out.println("~~~DATE:"+tempComp.getProperty("m9_DesignDate"));
 						return;
 					}
@@ -508,9 +503,10 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 	
 	private void readSpecifiedItemData(TCComponentBOMLine bomLine){
 		try{
-			specification.settings.addStringProperty("AddedText", bomLine.getItemRevision().getProperty("m9_AddNote").trim().equals("")?null:bomLine.getItemRevision().getProperty("m9_AddNote").trim());
-			specification.settings.addStringProperty("OBOZNACH", bomLine.getItem().getProperty("item_id"));
-			specification.settings.addStringProperty("NAIMEN", bomLine.getItemRevision().getProperty("object_name"));
+			Specification.settings.addStringProperty("AddedText", bomLine.getItemRevision().getProperty("m9_AddNote").trim().equals("")?null:bomLine.getItemRevision().getProperty("m9_AddNote").trim());
+			Specification.settings.addStringProperty("OBOZNACH", bomLine.getItem().getProperty("item_id"));
+			Specification.settings.addStringProperty("NAIMEN", bomLine.getItemRevision().getProperty("object_name"));
+			Specification.settings.addStringProperty("blockSettings", bomLine.getItemRevision().getProperty("m9_AddNote"));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}
