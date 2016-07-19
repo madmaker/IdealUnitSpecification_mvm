@@ -10,6 +10,7 @@ public class MVMBlockLineHandler implements BlockLineHandler{
 
 	@Override
 	public synchronized void prepareBlockLine(BlockLine bomLine) {
+		System.out.println("PREPARING:"+bomLine.getId());
 		if(bomLine.getFormat()==null){
 			bomLine.setFormat("");
 		}
@@ -22,13 +23,18 @@ public class MVMBlockLineHandler implements BlockLineHandler{
 			bomLine.setZone("*)");
 		}
 		if(bomLine.getFormat().exceedsLimit){
+			System.out.println("EXCEEDS");
 			//bomLine.getRemark().insertAt(0, LineUtil.getFittedLines(bomLine.getFormat().toString(),Specification.columnLengths.get(FormField.REMARK)));
 			bomLine.getRemark().insertAt(0,bomLine.getFormat().toString());
 			bomLine.setFormat("*)");
 		}
+		if(bomLine.getKits()!=null){
+			bomLine.getRemark().insert(bomLine.getKits().getKits());
+		}
 		if(bomLine.getSubstituteBOMLines()!=null){
 			bomLine.getRemark().insertAt(0, "Осн.");
 		} else if(bomLine.isSubstitute()){
+			System.out.println("BUILDING WITH QUANTITYFORS:"+bomLine.getQuantity());
 			bomLine.getRemark().insertAt(0, "*Допуск. зам.");
 		}
 		if(bomLine.getProperty("UOM")!=null && !bomLine.getProperty("UOM").equals("*")){

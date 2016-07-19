@@ -150,7 +150,7 @@ public class SampleHandler extends AbstractHandler {
 				
 				if(Specification.settings.getBooleanProperty("doRenumerize")){
 					PerfTrack.prepare("Saving&unlocking BOM");
-					//topBomLine.save();
+					topBomLine.save();
 					topBomLine.unlock();
 					PerfTrack.addToLog("Saving&unlocking BOM");
 				}
@@ -172,12 +172,13 @@ public class SampleHandler extends AbstractHandler {
 		for(String blockProps:settingsString.split("&")){
 			System.out.println(blockProps);
 			String[] props = blockProps.split(":");
+			if(props.length!=4) continue;
 			System.out.println(props[0]);
-			Block block = blockList.getBlock(BlockContentType.valueOf(props[0]), props[1]);
+			Block block = blockList.getBlock(BlockContentType.values()[Character.getNumericValue(props[0].charAt(0))], props[0].charAt(1)=='0'?"Default":"ME");
 			if(block!=null){
-				block.setReservePosNum(Integer.parseInt(props[2]));
-				block.setReserveLinesNum(Integer.parseInt(props[3]));
-				block.setIntervalPosNum(Integer.parseInt(props[4]));
+				block.setReservePosNum(Integer.parseInt(props[1]));
+				block.setReserveLinesNum(Integer.parseInt(props[2]));
+				block.setIntervalPosNum(Integer.parseInt(props[3]));
 			}
 		}
 	}
@@ -186,7 +187,7 @@ public class SampleHandler extends AbstractHandler {
 		String settingsString = "";
 		String del = ":";
 		for(Block block:blockList){
-			settingsString+=block.getBlockContentType()+del+block.getBlockType()+del+block.getReservePosNum()+del+block.getReserveLinesNum()+del+block.getIntervalPosNum();
+			settingsString+=block.getBlockContentType().ordinal()+(block.getBlockType().equals("Default")?"0":"1")+del+block.getReservePosNum()+del+block.getReserveLinesNum()+del+block.getIntervalPosNum();
 			settingsString+="&";
 		}
 		if(settingsString.endsWith("&")){

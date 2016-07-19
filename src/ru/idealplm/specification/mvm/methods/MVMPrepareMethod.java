@@ -20,7 +20,9 @@ public class MVMPrepareMethod implements PrepareMethod{
 		for(Block block:specification.getBlockList()) {
 			if(!block.isRenumerizable()) continue;
 			block.setFirstPosNo(firstPos);
+			System.out.println("Setting firstpos:" + firstPos + " For block:" + block.getBlockTitle());
 			firstPos = firstPos + block.getReservePosNum() + block.getRenumerizableLinesCount() + (block.getRenumerizableLinesCount()-1)*block.getIntervalPosNum();
+			System.out.println("next:"+block.getReservePosNum()+":"+block.getRenumerizableLinesCount()+":"+block.getIntervalPosNum());
 		}
 		for(Block block:specification.getBlockList()) block.run();
 		if(Specification.settings.getBooleanProperty("doRenumerize")){

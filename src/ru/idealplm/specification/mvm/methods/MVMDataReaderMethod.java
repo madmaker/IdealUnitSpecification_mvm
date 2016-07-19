@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
+
 import com.teamcenter.rac.aif.kernel.AIFComponentContext;
 import com.teamcenter.rac.kernel.TCComponent;
 import com.teamcenter.rac.kernel.TCComponentBOMLine;
@@ -66,13 +67,14 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				"bl_sequence_no",
 				"bl_quantity",
 				"M9_Note",
-				"m9_IsFromEAsm", //у вхождений с одинаковым sequence_no должно быть одинаковое значение
-				"m9_DisableChangeFindNo", //у вхождений с одинаковым sequence_no должно быть одинаковое значение
-				"m9_m9_KITName",
-				"bl_item_uom_tag"
+				"M9_IsFromEAssembly", //у вхождений с одинаковым sequence_no должно быть одинаковое значение
+				"M9_DisChangeFindNo", //у вхождений с одинаковым sequence_no должно быть одинаковое значение
+				"m9_KITName",
+				"bl_item_uom_tag",
+				"M9_KITs"
 		};
 		
-		public BlockLine parseLine(TCComponentBOMLine bomLine){
+		public BlockLine parseLine(TCComponentBOMLine bomLine, boolean isSubstitute){
 			try{
 				TCComponent item = bomLine.getItem();
 				TCComponentItemRevision itemIR = bomLine.getItemRevision();
@@ -85,10 +87,11 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				}
 				
 				//System.out.println("_processing by processor " + id + " *** *** " + bomLine.getItem().getType() + " --> " + Arrays.toString(properties));
-				validateBOMLineAttributess(properties[0], properties[5], properties[6]);
+				validateBOMLineAttributess(properties[1], properties[4], properties[5]);
 				
 				MVMBlockLineHandler blockLineHandler = new MVMBlockLineHandler();
 				BlockLine resultBlockLine = new BlockLine(blockLineHandler);
+				resultBlockLine.setIsSubstitute(isSubstitute);
 				resultBlockLine.setZone(properties[0]);
 				resultBlockLine.setPosition(properties[1]);
 				
@@ -152,7 +155,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 						resultBlockLine.addRefBOMLine(bomLine);
 						AIFComponentContext[] relatedBlanks = bomLine.getItemRevision().getRelated("M9_StockRel");
 						if(relatedBlanks.length>0){
-							BlockLine blank = new BlockLine();
+							BlockLine blank = new BlockLine(blockLineHandler);
 							TCComponentItem blankItem = (TCComponentItem)relatedBlanks[0].getComponent();
 							blank.setPosition("-");
 							blank.setName(blankItem.getLatestItemRevision().getProperty("object_name") + " " + "Изделие-заготовка для " + resultBlockLine.getId());
@@ -160,8 +163,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 								relatedDocs = ((TCComponentItem)relatedBlanks[0].getComponent()).getLatestItemRevision().getRelated("M9_DocRel");
 								for(AIFComponentContext relatedDoc : relatedDocs){
 									String docID = relatedDoc.getComponent().getProperty("item_id");
-									if(docID.substring(0, docID.lastIndexOf(" ")).equals(bomLine.getItem().getProperty("item_id"))){
-										String format = blankItem.getLatestItemRevision().getProperty("m9_Format");
+									if(docID.equals(blankItem.getProperty("item_id"))){
+										String format = ((TCComponentItem)relatedDoc.getComponent()).getLatestItemRevision().getProperty("m9_Format");
+										System.out.println("FORMATFOR:"+format);
 										blank.setFormat(format);
 										break;
 									}
@@ -187,6 +191,10 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					resultBlockLine.setQuantity(properties[2]);
 					resultBlockLine.setRemark(properties[3]);
 					resultBlockLine.addRefBOMLine(bomLine);
+					if(!properties[8].isEmpty()){
+						resultBlockLine.createKits();
+						resultBlockLine.addKit(properties[8], properties[6], properties[2].isEmpty()?1:Integer.parseInt(properties[2]));
+					}
 					System.out.println("~~~~~~FOUND OTHER " + item.getProperty("m9_TypeOfPart"));
 					if(item.getProperty("m9_TypeOfPart").equals("Прочее изделие")){
 						System.out.println("~~~~~~FOUND OTHER");
@@ -201,12 +209,20 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 						resultBlockLine = materialUIDs.get(itemIR.getUid());
 						resultBlockLine.addQuantity(properties[2]);
 						resultBlockLine.addRefBOMLine(bomLine);
+						if(!properties[8].isEmpty()){
+							resultBlockLine.createKits();
+							resultBlockLine.addKit(properties[8], properties[6], properties[2].isEmpty()?1:Integer.parseInt(properties[2]));
+						}
 					} else {
 						materialUIDs.put(itemIR.getUid(), resultBlockLine);
 						resultBlockLine.setName(itemIR.getProperty("object_name"));
 						resultBlockLine.setQuantity(properties[2]);
 						resultBlockLine.addRefBOMLine(bomLine);
 						resultBlockLine.addProperty("UOM", properties[7]);
+						if(!properties[8].isEmpty()){
+							resultBlockLine.createKits();
+							resultBlockLine.addKit(properties[8], properties[6], properties[2].isEmpty()?1:Integer.parseInt(properties[2]));
+						}
 						blockList.getBlock(BlockContentType.MATERIALS , isDefault?"Default":"ME").addBlockLine(uid, resultBlockLine);
 					}
 				} else if(item.getType().equals("M9_GeomOfMat")){
@@ -254,13 +270,15 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			while(!bomQueue.isEmpty()){
 				try {
 					bomLine = (TCComponentBOMLine) bomQueue.take().getComponent();
-					BlockLine line = parseLine(bomLine);
+					BlockLine line = parseLine(bomLine, false);
 					for(TCComponentBOMLine comp : bomLine.listSubstitutes()){
-						BlockLine substituteLine = parseLine(comp);
-						substituteLine.setIsSubstitute(true);
+						BlockLine substituteLine = parseLine(comp, true);
+						//substituteLine.setIsSubstitute(true);
 						//substituteLine.addRefBOMLine(bomLine);
 						substituteLine.setPosition(line.getPosition()+"*");
+						substituteLine.setQuantity("-1");
 						//substituteLine.build();
+						System.out.println("QUANTITYFORS:"+substituteLine.getQuantity());
 						line.addSubstituteBOMLine(substituteLine);
 					}
 					//line.build();
@@ -324,6 +342,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				if(blockList.get(i).size()!=0) {
 					tempList.addBlock(blockList.get(i));
 					for(BlockLine line:blockList.get(i).getListOfLines()){
+						if(line.isSubstitute()){
+							System.out.println("BEFORE QUANTITYFORS:"+line.getQuantity());
+						}
 						line.build();
 					}
 				}
@@ -331,6 +352,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			specification.setBlockList(tempList);
 			if(tempList.size()==0){
 				specification.getErrorList().addError(new Error("ERROR", "Отсутствуют разделы спецификации."));
+			}
+			if(m9_IsFromEAsmList.size()>0 && Specification.settings.getStringProperty("MEDocumentId")==null){
+				specification.getErrorList().addError(new Error("ERROR", "Отсутствует документ МЭ."));
 			}
 			
 			Specification.settings.addBooleanProperty("canRenumerize", !atLeastOnePosIsFixed);
@@ -475,25 +499,19 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 		try{
 			System.out.println("+++++GENERAL NOTE FORM!!!!");
 			TCComponentItemRevision specIR = specification.getSpecificationItemRevision();
-			TCComponent noteForm;
 			TCComponent tempComp;
 			if(specIR!=null){
-				System.out.println("+++++NOT NULL!!!!");
-				for(AIFComponentContext compCont:specIR.getChildren()){
-					tempComp = (TCComponent)compCont.getComponent();
-					System.out.println("+++++FOUND TYPE!!!!" + tempComp.getType());
-					if(tempComp.getType().equals("M9_GeneralNoteForm")){
-						System.out.println("+++++FOUND FORM!!!!");
-						noteForm = tempComp;
-						Specification.settings.addStringProperty("Designer", tempComp.getProperty("m9_Designer"));
-						Specification.settings.addStringProperty("Check", tempComp.getProperty("m9_Check"));
-						Specification.settings.addStringProperty("AddCheckPost", tempComp.getProperty("m9_AddCheckPost"));
-						Specification.settings.addStringProperty("AddCheck", tempComp.getProperty("m9_AddCheck"));
-						Specification.settings.addStringProperty("NCheck", tempComp.getProperty("m9_NCheck"));
-						Specification.settings.addStringProperty("Approver", tempComp.getProperty("m9_Approver"));
-						System.out.println("~~~DATE:"+tempComp.getProperty("m9_DesignDate"));
-						return;
-					}
+				if((tempComp = specIR.getRelatedComponent("M9_SignRel"))!=null){
+					System.out.println("+++++FOUND SIGN FORM!!!!");
+					Specification.settings.addStringProperty("Designer", tempComp.getProperty("m9_Designer"));
+					Specification.settings.addStringProperty("Check", tempComp.getProperty("m9_Check"));
+					Specification.settings.addStringProperty("AddCheckPost", tempComp.getProperty("m9_AddCheckPost"));
+					Specification.settings.addStringProperty("AddCheck", tempComp.getProperty("m9_AddCheck"));
+					Specification.settings.addStringProperty("NCheck", tempComp.getProperty("m9_NCheck"));
+					Specification.settings.addStringProperty("Approver", tempComp.getProperty("m9_Approver"));
+				}
+				if(specIR.getRelatedComponent("IMAN_master_form_rev")!=null){
+					Specification.settings.addStringProperty("blockSettings", specIR.getRelatedComponent("IMAN_master_form_rev").getProperty("object_desc"));
 				}
 			}
 		} catch (Exception ex){
@@ -506,7 +524,6 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			Specification.settings.addStringProperty("AddedText", bomLine.getItemRevision().getProperty("m9_AddNote").trim().equals("")?null:bomLine.getItemRevision().getProperty("m9_AddNote").trim());
 			Specification.settings.addStringProperty("OBOZNACH", bomLine.getItem().getProperty("item_id"));
 			Specification.settings.addStringProperty("NAIMEN", bomLine.getItemRevision().getProperty("object_name"));
-			Specification.settings.addStringProperty("blockSettings", bomLine.getItemRevision().getProperty("m9_AddNote"));
 		} catch (Exception ex){
 			ex.printStackTrace();
 		}

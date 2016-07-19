@@ -101,10 +101,24 @@ public class MVMAttachMethod implements AttachMethod{
 			TCComponentDataset ds_new = createDatasetAndAddFile(specification.getReportFile().getAbsolutePath());
 			if (ds_new != null) {
 				System.out.println("Adding to item_id: " + specIR.getProperty("item_id"));
+				TCComponent tempComp;
+				if((tempComp = specIR.getRelatedComponent("M9_SignRel"))!=null){
+					System.out.println("+++++FOUND SIGN FORM!!!!");
+					tempComp.setProperty("m9_Designer", Specification.settings.getStringProperty("Designer"));
+					tempComp.setProperty("m9_Check", Specification.settings.getStringProperty("Check"));
+					tempComp.setProperty("m9_AddCheckPost", Specification.settings.getStringProperty("AddCheckPost"));
+					tempComp.setProperty("m9_AddCheck", Specification.settings.getStringProperty("AddCheck"));
+					tempComp.setProperty("m9_NCheck", Specification.settings.getStringProperty("NCheck"));
+					tempComp.setProperty("m9_Approver", Specification.settings.getStringProperty("Approver"));
+				}
+				if(specIR.getRelatedComponent("IMAN_master_form_rev")!=null){
+					specIR.getRelatedComponent("IMAN_master_form_rev").setProperty("object_desc", Specification.settings.getStringProperty("blockSettings"));
+					/*Specification.settings.addStringProperty("blockSettings", specIR.getRelatedComponent("IMAN_master_form_rev").getProperty("object_desc"));*/
+				}
 				specIR.add("IMAN_specification", ds_new);
 				specIR.lock();
-				//topBOMLine.getItemRevision().setProperty("m9_AddNote", Specification.settings.getStringProperty("AddedText"));
-				topBOMLine.getItemRevision().setProperty("m9_AddNote", Specification.settings.getStringProperty("blockSettings"));
+				topBOMLine.getItemRevision().setProperty("m9_AddNote", Specification.settings.getStringProperty("AddedText"));
+				//topBOMLine.getItemRevision().setProperty("m9_AddNote", Specification.settings.getStringProperty("blockSettings"));
 				specIR.setProperty("m9_Litera1", specification.settings.getStringProperty("LITERA1"));
 				specIR.setProperty("m9_Litera2", specification.settings.getStringProperty("LITERA2"));
 				specIR.setProperty("m9_Litera3", specification.settings.getStringProperty("LITERA3"));
