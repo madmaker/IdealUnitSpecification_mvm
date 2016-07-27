@@ -1,7 +1,7 @@
 package ru.idealplm.specification.mvm.gui;
 
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.ListIterator;
 
 import org.eclipse.swt.widgets.Dialog;
@@ -32,6 +32,7 @@ import ru.idealplm.specification.mvm.util.PerfTrack;
 import ru.idealplm.utils.specification.Block;
 import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
+import ru.idealplm.utils.specification.Specification.BlockType;
 import ru.idealplm.utils.specification.util.GeneralUtils;
 
 import org.eclipse.swt.widgets.DateTime;
@@ -62,6 +63,12 @@ public class MainSpecificationDialog extends Dialog {
 	private Text textAddCheck;
 	private Text textNCheck;
 	private Text textApprover;
+	
+	private DateButton dateDesigner;
+	private DateButton dateCheck;
+	private DateButton dateAddCheck;
+	private DateButton dateNCheck;
+	private DateButton dateApprover;
 
 	/**
 	 * Create the dialog.
@@ -114,10 +121,10 @@ public class MainSpecificationDialog extends Dialog {
 			} else {
 				blockItem.setText(new String[]{block.getBlockTitle(), String.valueOf(block.getReservePosNum()), String.valueOf(block.getReserveLinesNum()), String.valueOf(block.getIntervalPosNum())});
 			}
-			if(block.getBlockType().equals("Default") && iterator.nextIndex()!=blockList.size()){
-				if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
+			if(block.getBlockType()==BlockType.DEFAULT && iterator.nextIndex()!=blockList.size()){
+				if(blockList.get(iterator.nextIndex()).getBlockType()==BlockType.ME){
 					blockItem = new TableItem(table, SWT.NONE);
-					blockItem.setText(new String[]{"Устанавливается по " + Specification.settings.getStringProperty("MEDocumentId")});
+					blockItem.setText(new String[]{"Устанавливается по\n" + Specification.settings.getStringProperty("MEDocumentId")});
 					blockItem.setGrayed(true);
 				}
 			}
@@ -135,6 +142,19 @@ public class MainSpecificationDialog extends Dialog {
 		textAddCheckPost.setText(Specification.settings.getStringProperty("AddCheckPost")==null?"":Specification.settings.getStringProperty("AddCheckPost"));
 		textAddCheck.setText(Specification.settings.getStringProperty("AddCheck")==null?"":Specification.settings.getStringProperty("AddCheck"));
 
+		//TODO okeanos
+		Date d1 = new Date();
+		d1.setYear(116);
+		d1.setMonth(11);
+		d1.setDate(29);
+		System.out.println(Specification.settings.getStringProperty("DesignerDate"));
+		//Date d2 = new Date(Specification.settings.getStringProperty("DesignerDate"));
+		dateDesigner.setDate(d1);
+		dateCheck.setDate(d1);
+		dateAddCheck.setDate(d1);
+		dateApprover.setDate(d1);
+		dateNCheck.setDate(d1);
+		
 		PerfTrack.addToLog("Filling contents");
 	}
 	
@@ -194,6 +214,52 @@ public class MainSpecificationDialog extends Dialog {
 		textApprover = new Text(compositeSignatures, SWT.BORDER);
 		textApprover.setBounds(144, 212, 110, 23);
 		
+		//TODO okeanos
+		Composite compositeDesigner = new Composite(compositeSignatures, SWT.EMBEDDED);
+		compositeDesigner.setBounds(260, 44, 150, 23);
+		java.awt.Frame frameDesigner = SWT_AWT.new_Frame(compositeDesigner);
+	    java.awt.Panel panelDesigner = new java.awt.Panel(new java.awt.BorderLayout());
+	    frameDesigner.add(panelDesigner);
+		dateDesigner = new DateButton();
+		dateDesigner.setDoubleBuffered(true);
+		panelDesigner.add(dateDesigner);
+		
+		Composite compositeCheck = new Composite(compositeSignatures, SWT.EMBEDDED);
+		compositeCheck.setBounds(260, 85, 150, 23);
+		java.awt.Frame frameCheck = SWT_AWT.new_Frame(compositeCheck);
+	    java.awt.Panel panelCheck = new java.awt.Panel(new java.awt.BorderLayout());
+	    frameCheck.add(panelCheck);
+		dateCheck = new DateButton();
+		dateCheck.setDoubleBuffered(true);
+		panelCheck.add(dateCheck);
+		
+		Composite compositeAddCheck = new Composite(compositeSignatures, SWT.EMBEDDED);
+		compositeAddCheck.setBounds(260, 128, 150, 23);
+		java.awt.Frame frameAddCheck = SWT_AWT.new_Frame(compositeAddCheck);
+	    java.awt.Panel panelAddCheck = new java.awt.Panel(new java.awt.BorderLayout());
+	    frameAddCheck.add(panelAddCheck);
+		dateAddCheck = new DateButton();
+		dateAddCheck.setDoubleBuffered(true);
+		panelAddCheck.add(dateAddCheck);
+		
+		Composite compositeNCheck = new Composite(compositeSignatures, SWT.EMBEDDED);
+		compositeNCheck.setBounds(260, 170, 150, 23);
+		java.awt.Frame frameNCheck = SWT_AWT.new_Frame(compositeNCheck);
+		java.awt.Panel panelNCheck = new java.awt.Panel(new java.awt.BorderLayout());
+		frameNCheck.add(panelNCheck);
+		dateNCheck = new DateButton();
+		dateNCheck.setDoubleBuffered(true);
+		panelNCheck.add(dateNCheck);
+		
+		Composite compositeApprover = new Composite(compositeSignatures, SWT.EMBEDDED);
+		compositeApprover.setBounds(260, 212, 150, 23);
+		java.awt.Frame frameApprover = SWT_AWT.new_Frame(compositeApprover);
+	    java.awt.Panel panelApprover = new java.awt.Panel(new java.awt.BorderLayout());
+	    frameApprover.add(panelApprover);
+		dateApprover = new DateButton();
+		dateApprover.setDoubleBuffered(true);
+		panelApprover.add(dateApprover);
+		
 	    tabMain.setText("Настройки");
 	    tabSignatures.setText("\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u0442\u044B");
 
@@ -217,6 +283,46 @@ public class MainSpecificationDialog extends Dialog {
 		table.setLinesVisible(true);
 		table.setBounds(10, 21, 404, 189);
 		table.setEnabled(false);
+		
+		//TODO implement multiline?
+		/*Listener paintListener = new Listener() {
+		      public void handleEvent(Event event) {
+		        switch (event.type) {
+		        case SWT.MeasureItem: {
+		          TableItem item = (TableItem) event.item;
+		          String text = getText(item, event.index);
+		          Point size = event.gc.textExtent(text);
+		          if(text.startsWith("Устана")){
+		        	  event.width = size.x*table.getColumnCount();
+		          }else {
+		        	  event.width = size.x;
+		          }
+		          event.height = Math.max(event.height, size.y);
+		          break;
+		        }
+		        case SWT.PaintItem: {
+		          TableItem item = (TableItem) event.item;
+		          String text = getText(item, event.index);
+		          Point size = event.gc.textExtent(text);
+		          int offset2 = event.index == 0 ? Math.max(0, (event.height - size.y) / 2) : 0;
+		          event.gc.drawText(text, event.x, event.y + offset2, true);
+		          break;
+		        }
+		        case SWT.EraseItem: {
+		          event.detail &= ~SWT.FOREGROUND;
+		          break;
+		        }
+		        }
+		      }
+
+		      String getText(TableItem item, int column) {
+		        String text = item.getText(column);
+		        return text;
+		      }
+		};
+		table.addListener(SWT.MeasureItem, paintListener);
+		table.addListener(SWT.PaintItem, paintListener);
+		table.addListener(SWT.EraseItem, paintListener);*/
 		
 		final TableEditor editor = new TableEditor(table);
 		editor.horizontalAlignment = SWT.RIGHT;
@@ -314,14 +420,14 @@ public class MainSpecificationDialog extends Dialog {
 		final Button button_ReadLastRevPos = new Button(compositeMain, SWT.CHECK);
 		button_ReadLastRevPos.setText("\u0417\u0430\u0447\u0438\u0442\u0430\u0442\u044C \u043F\u043E\u0437\u0438\u0446\u0438\u0438 \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0439 \u0440\u0435\u0432\u0438\u0437\u0438\u0438");
 		button_ReadLastRevPos.setBounds(10, 258, 225, 16);
-		//button_ReadLastRevPos.setEnabled(Specification.settings.getBooleanProperty("canReadLastRevPos"));
-		button_ReadLastRevPos.setEnabled(false);
+		button_ReadLastRevPos.setEnabled(Specification.settings.getBooleanProperty("canReadLastRevPos"));
+		//button_ReadLastRevPos.setEnabled(false);
 		
 		final Button button_UseReservePos = new Button(compositeMain, SWT.CHECK);
 		button_UseReservePos.setText("\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C \u0440\u0435\u0437\u0435\u0440\u0432 \u043F\u043E\u0437\u0438\u0446\u0438\u0439");
 		button_UseReservePos.setBounds(10, 282, 225, 16);
-		//button_UseReservePos.setEnabled(Specification.settings.getBooleanProperty("canUseReservePos"));
-		button_UseReservePos.setEnabled(false);
+		button_UseReservePos.setEnabled(Specification.settings.getBooleanProperty("canUseReservePos"));
+		//button_UseReservePos.setEnabled(false);
 		
 		Label label = new Label(compositeMain, SWT.NONE);
 		label.setBounds(10, 317, 136, 13);
@@ -362,7 +468,7 @@ public class MainSpecificationDialog extends Dialog {
 		btnOk.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				specification.isOkPressed = true;
+				Specification.settings.addBooleanProperty("bOkPressed", true);
 				Specification.settings.addBooleanProperty("doRenumerize", button_Renumerize.getSelection());
 				Specification.settings.addBooleanProperty("doReadLastRevPos", button_ReadLastRevPos.getSelection());
 				Specification.settings.addBooleanProperty("doUseReservePos", button_UseReservePos.getSelection());
@@ -379,6 +485,13 @@ public class MainSpecificationDialog extends Dialog {
 				Specification.settings.addStringProperty("AddCheck", textAddCheck.getText());
 				Specification.settings.addStringProperty("NCheck", textNCheck.getText());
 				Specification.settings.addStringProperty("Approver", textApprover.getText());
+				
+				//TODO okeanos
+				Specification.settings.addStringProperty("DesignerDate", dateDesigner.getText());
+				Specification.settings.addStringProperty("CheckDate", dateCheck.getText());
+				Specification.settings.addStringProperty("AddCheckDate", dateAddCheck.getText());
+				Specification.settings.addStringProperty("NCheckDate", dateNCheck.getText());
+				Specification.settings.addStringProperty("ApproverDate", dateApprover.getText());
 				
 				BlockList blockList = specification.getBlockList();
 				int j = 0;

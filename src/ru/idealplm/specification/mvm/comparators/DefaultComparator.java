@@ -15,8 +15,8 @@ public class DefaultComparator implements Comparator<BlockLine> {
 	@Override
 	public int compare(BlockLine line0, BlockLine line1) {
 		
-		String field0 = line0.getStringValueFromField(sortField);
-		String field1 = line1.getStringValueFromField(sortField);
+		String field0 = line0.attributes.getStringValueFromField(sortField);
+		String field1 = line1.attributes.getStringValueFromField(sortField);
 		
 		int result = 0;
 

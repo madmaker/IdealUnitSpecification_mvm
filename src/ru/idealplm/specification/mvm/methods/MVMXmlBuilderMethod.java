@@ -20,13 +20,14 @@ import ru.idealplm.utils.specification.Block;
 import ru.idealplm.utils.specification.BlockLine;
 import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
+import ru.idealplm.utils.specification.Specification.BlockType;
 import ru.idealplm.utils.specification.Specification.FormField;
 import ru.idealplm.utils.specification.methods.XmlBuilderMethod;
-import ru.idealplm.utils.specification.util.GeneralUtils;
 import ru.idealplm.utils.specification.util.LineUtil;
 
 public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	
+	private Specification specification = Specification.getInstance();
 	final private double maxWidthGlobalRemark = 474.0;
 	private ArrayList<Integer> max_cols_sise_a1;
 	private final int MAX_LINES_FIRST = 29;
@@ -73,7 +74,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	/****************/
 
 	@Override
-	public File makeXmlFile(Specification specification) {
+	public File makeXmlFile() {
 		System.out.println("...METHOD... XmlBuilderhMethod");
 		if(Specification.settings.getStringProperty("AddedText")!=null){
 			globalRemark = LineUtil.getFittedLines(Specification.settings.getStringProperty("AddedText"), maxWidthGlobalRemark);
@@ -94,7 +95,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 		stampMap.put("RAZR", Specification.settings.getStringProperty("Designer")==null?"":Specification.settings.getStringProperty("Designer"));
 		
 		emptyLine = (new BlockLine()).build();
-		emptyLine.setQuantity("-1.0");
+		emptyLine.attributes.setQuantity("-1.0");
 		try{
 			documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			builder = documentBuilderFactory.newDocumentBuilder();
@@ -125,12 +126,13 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			while(iterator.hasNext()){
 				block = iterator.next();
 				processBlock(block);
-				if(block.getBlockType().equals("Default") && iterator.nextIndex()!=blockList.size()){
-					if(blockList.get(iterator.nextIndex()).getBlockType().equals("ME")){
+				if(block.getBlockType()==BlockType.DEFAULT && iterator.nextIndex()!=blockList.size()){
+					if(blockList.get(iterator.nextIndex()).getBlockType()==BlockType.ME){
 						newPage();
 						//addEmptyLines(1);
-						String string = "Устанавливается по " + specification.settings.getStringProperty("MEDocumentId");
+						String string = "Устанавливается по " + Specification.settings.getStringProperty("MEDocumentId");
 						node_occ = document.createElement("Occurrence");
+						node_occ.setAttribute("font", "underline,bold");
 						node = document.createElement("Col_" + 4);
 						node.setTextContent(string.substring(0, string.length()/2));
 						node.setAttribute("align", "right");
@@ -176,11 +178,11 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 				node_root.appendChild(node_block);
 				addEmptyLines(1);
 			}
-			if(getFreeLinesNum() < 3 + block.getListOfLines().get(0).getLineHeight()){
+			if(getFreeLinesNum() < 3 + block.getListOfLines().get(0).lineHeight){
 				newPage();
 			}
 			if(blockList.getLast()==block && block.size()==1 && globalRemark!=null){
-				if(getFreeLinesNum() < (globalRemark.size() + block.getListOfLines().get(0).getLineHeight() + 2)){
+				if(getFreeLinesNum() < (globalRemark.size() + block.getListOfLines().get(0).lineHeight + 2)){
 					newPage();
 				}
 			}
@@ -207,7 +209,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 		int result = 0;
 		if(line.getAttachedLines() == null) return result;
 		for(BlockLine attachedLine : line.getAttachedLines()){
-			result += attachedLine.getLineHeight();
+			result += attachedLine.lineHeight;
 		}
 		return result;
 	}
@@ -224,72 +226,72 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	public void newLine(Block block, BlockLine line){
 		boolean isLastLineInBlock = (block.getListOfLines().get(block.getListOfLines().size()-1)==line) && blockList.getLast()==block;
 		
-		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.getLineHeight()))){
+		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.lineHeight))){
 			newPage();
 		}
 		
-		if(getFreeLinesNum() < (line.getLineHeight() + 1 + countSublines(line))) newPage();
+		if(getFreeLinesNum() < (line.lineHeight + 1 + countSublines(line))) newPage();
 		
 		if(block.getListOfLines().indexOf(line) != block.size()-1){
 			int thisLinePos = 0;
 			int nextLinePos = 0;
 			boolean flag = true;
 			try{
-				thisLinePos = Integer.parseInt(line.getPosition());
+				thisLinePos = Integer.parseInt(line.attributes.getPosition());
 			} catch	(NumberFormatException ex){
 				flag = false;
 			}
 			try {
-				nextLinePos = Integer.parseInt(block.getListOfLines().get(block.getListOfLines().indexOf(line)+1).getPosition());
+				nextLinePos = Integer.parseInt(block.getListOfLines().get(block.getListOfLines().indexOf(line)+1).attributes.getPosition());
 			} catch (NumberFormatException ex){
 				flag = false;
 			}
 			if(flag && (nextLinePos > thisLinePos)) {
 				for(int i = 0; i < nextLinePos-thisLinePos-1; i++){
-					line.attachLine(emptyLine);
+					line.getAttachedLines().add(emptyLine);
 				}
 				//addEmptyLines((nextLinePos-thisLinePos-1)*2);
 			}
 		}
 		
-		for(int i = 0; i < line.getLineHeight(); i++){
+		for(int i = 0; i < line.lineHeight; i++){
 			node_occ = document.createElement("Occurrence");
 			if(i==0){
 				node = document.createElement("Col_" + 1);
 				node.setAttribute("align", "center");
-				node.setTextContent(line.getFormat().toString());
+				node.setTextContent(line.attributes.getFormat().toString());
 				node_occ.appendChild(node);
 				node = document.createElement("Col_" + 2);
 				node.setAttribute("align", "center");
-				node.setTextContent(line.getZone().toString());
+				node.setTextContent(line.attributes.getZone().toString());
 				node_occ.appendChild(node);
 				node = document.createElement("Col_" + 3);
 				node.setAttribute("align", "center");
-				node.setTextContent(line.getPosition());
+				node.setTextContent(line.attributes.getPosition());
 				node_occ.appendChild(node);
 				node = document.createElement("Col_" + 4);
-				node.setTextContent(line.getId());
+				node.setTextContent(line.attributes.getId());
 				node_occ.appendChild(node);
 				node = document.createElement("Col_" + 6);
 				node.setAttribute("align", "center");
-				node.setTextContent(line.getStringValueFromField(FormField.QUANTITY).equals("-1")?" ":line.getStringValueFromField(FormField.QUANTITY));
+				node.setTextContent(line.attributes.getStringValueFromField(FormField.QUANTITY).equals("-1")?" ":line.attributes.getStringValueFromField(FormField.QUANTITY));
 				//node.setTextContent(String.valueOf(line.getQuantity()).equals("-1.0")?" ":String.valueOf(line.getQuantity()));
 				node_occ.appendChild(node);
 			}
 			node = document.createElement("Col_" + 5);
-			node.setTextContent((line.getName()!=null && (i < line.getName().size())) ? line.getName().get(i) : "");
+			node.setTextContent((line.attributes.getName()!=null && (i < line.attributes.getName().size())) ? line.attributes.getName().get(i) : "");
 			node_occ.appendChild(node);
 			node = document.createElement("Col_" + 7);
-			node.setTextContent((line.getRemark()!=null && (i < line.getRemark().size())) ? line.getRemark().get(i) : "");
+			node.setTextContent((line.attributes.getRemark()!=null && (i < line.attributes.getRemark().size())) ? line.attributes.getRemark().get(i) : "");
 			node_occ.appendChild(node);
-			if (i==line.getLineHeight()-1){
+			if (i==line.lineHeight-1){
 			}
 			
 			node_block.appendChild(node_occ);
 		}
 		
 		
-		currentLineNum += line.getLineHeight();
+		currentLineNum += line.lineHeight;
 		addEmptyLines(1);
 
 		if(line.getAttachedLines()!=null){
@@ -303,6 +305,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			addEmptyLines(1);
 			for(String string : globalRemark){
 				node_occ = document.createElement("Occurrence");
+				node_occ.setAttribute("merge", "true");
 				node = document.createElement("Col_" + 4);
 				node.setAttribute("align", "left");
 				node.setTextContent(string);

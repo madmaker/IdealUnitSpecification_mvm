@@ -13,25 +13,27 @@ import ru.idealplm.utils.specification.methods.ValidateMethod;
 
 public class MVMValidateMethod implements ValidateMethod{
 
+	private Specification specification = Specification.getInstance();
+	
 	@Override
-	public boolean validate(Specification specification, ErrorList errorList) {
+	public boolean validate() {
 		System.out.println("...METHOD... ValidateMethod");
 		ArrayList<String> acceptableTypesOfPart = new ArrayList<String>(Arrays.asList("Сборочная единица", "Комплект", "Комплекс"));
 		
 		TCComponentBOMLine topBOMLine = specification.getTopBOMLine();
 		
 		if(topBOMLine==null){
-			errorList.addError(new Error("ERROR", "Отсутствует состав для построения спецификации"));
+			Specification.errorList.addError(new Error("ERROR", "Отсутствует состав для построения спецификации"));
 			return false;
 		}
 		
 		try{
 			TCComponentItem item = topBOMLine.getItem();
 			if(!"M9_CompanyPart".equals(item.getType())){
-				errorList.addError(new Error("ERROR", "Недопустимый вид изделия!"));
+				Specification.errorList.addError(new Error("ERROR", "Недопустимый вид изделия!"));
 				return false;
 			} else if(!acceptableTypesOfPart.contains(item.getProperty("m9_TypeOfPart"))){
-				errorList.addError(new Error("ERROR", "Недопустимый тип изделия!"));
+				Specification.errorList.addError(new Error("ERROR", "Недопустимый тип изделия!"));
 				return false;
 			}
 		}catch(Exception ex){

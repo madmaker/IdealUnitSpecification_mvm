@@ -8,18 +8,16 @@ import ru.idealplm.utils.specification.Specification;
 
 public class DocumentComparator implements Comparator<BlockLine>{
 	
-	private Specification specification;
 	private ArrayList<String> docTypesPriority = new ArrayList<String>();
 	
-	public DocumentComparator(Specification specification){
-		this.specification = specification;
+	public DocumentComparator(){
 		loadDocumentTypes();
 	}
 
 	@Override
 	public int compare(BlockLine bl0, BlockLine bl1) {
-		boolean bl0_is_base = Specification.settings.getStringProperty("OBOZNACH").equals(bl0.getId().substring(0, bl0.getId().lastIndexOf(" ")));
-		boolean bl1_is_base = Specification.settings.getStringProperty("OBOZNACH").equals(bl1.getId().substring(0, bl1.getId().lastIndexOf(" ")));
+		boolean bl0_is_base = Specification.settings.getStringProperty("OBOZNACH").equals(bl0.attributes.getId().substring(0, bl0.attributes.getId().lastIndexOf(" ")));
+		boolean bl1_is_base = Specification.settings.getStringProperty("OBOZNACH").equals(bl1.attributes.getId().substring(0, bl1.attributes.getId().lastIndexOf(" ")));
 	
 		if(bl0_is_base && bl1_is_base){
 			return (docTypesPriority.indexOf(bl0.getProperty("Type")) < docTypesPriority.indexOf(bl1.getProperty("Type"))) ? -1 : 1;
@@ -44,8 +42,8 @@ public class DocumentComparator implements Comparator<BlockLine>{
 	
 	private int compareIDs(BlockLine bl0, BlockLine bl1) {
 		
-		String field0 = bl0.getId().substring(0, bl0.getId().lastIndexOf(" "));
-		String field1 = bl1.getId().substring(0, bl1.getId().lastIndexOf(" "));
+		String field0 = bl0.attributes.getId().substring(0, bl0.attributes.getId().lastIndexOf(" "));
+		String field1 = bl1.attributes.getId().substring(0, bl1.attributes.getId().lastIndexOf(" "));
 		
 		int result = 0;
 		

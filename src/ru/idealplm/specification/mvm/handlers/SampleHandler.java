@@ -30,6 +30,8 @@ import ru.idealplm.utils.specification.Block;
 import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
 import ru.idealplm.utils.specification.Specification.BlockContentType;
+import ru.idealplm.utils.specification.Specification.BlockType;
+import ru.idealplm.utils.specification.SpecificationSettings;
 
 import com.teamcenter.rac.kernel.TCComponentBOMLine;
 import com.teamcenter.rac.kernel.TCException;
@@ -50,46 +52,45 @@ public class SampleHandler extends AbstractHandler {
 	@SuppressWarnings("restriction")
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
-		
 		TCComponentBOMLine topBomLine = Activator.getPSEService().getTopBOMLine();
-		Specification specification = new Specification(topBomLine, new MVMValidateMethod(), new MVMDataReaderMethod(), new MVMPrepareMethod(), new MVMXmlBuilderMethod(),new MVMReportBuilderMethod() , new MVMAttachMethod());
+		Specification specification = Specification.getInstance();
+		specification.init(topBomLine, new MVMValidateMethod(), new MVMDataReaderMethod(), new MVMPrepareMethod(), new MVMXmlBuilderMethod(),new MVMReportBuilderMethod() , new MVMAttachMethod());
 		
 		DefaultComparator defaultComparator = new DefaultComparator(Specification.FormField.POSITION);
 		DefaultComparator defaultNameComparator = new DefaultComparator(Specification.FormField.NAME);
 		DefaultComparator defaultIDComparator = new DefaultComparator(Specification.FormField.ID);
-		DocumentComparator docComparator = new DocumentComparator(specification);
-		KitComparator kitComparator = new KitComparator(specification);
-		NumberComparator numComparator = new NumberComparator(Specification.FormField.POSITION);
+		DocumentComparator docComparator = new DocumentComparator();
+		KitComparator kitComparator = new KitComparator();
 		PositionComparator posComparator = new PositionComparator();
 		
 		BlockList blockList = specification.getBlockList();
-		blockList.addBlock(new Block(BlockContentType.DOCS, "Default", docComparator, docComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.COMPLEXES, "Default", defaultIDComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, "Default", defaultIDComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.DETAILS, "Default", posComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.STANDARDS, "Default", defaultNameComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.OTHERS, "Default", defaultNameComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.MATERIALS, "Default", posComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.KITS, "Default", kitComparator, kitComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.COMPLEXES, "ME", defaultIDComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, "ME", defaultIDComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.DETAILS, "ME", defaultComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.STANDARDS, "ME", defaultNameComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.OTHERS, "ME", defaultNameComparator, posComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.MATERIALS, "ME", defaultComparator, defaultComparator, 0));
-		blockList.addBlock(new Block(BlockContentType.KITS, "ME", kitComparator, kitComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.DOCS, BlockType.DEFAULT, docComparator, docComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.COMPLEXES, BlockType.DEFAULT, defaultIDComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, BlockType.DEFAULT, defaultIDComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.DETAILS, BlockType.DEFAULT, posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.STANDARDS, BlockType.DEFAULT, defaultNameComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.OTHERS, BlockType.DEFAULT, defaultNameComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.MATERIALS, BlockType.DEFAULT, posComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.KITS, BlockType.DEFAULT, kitComparator, kitComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.COMPLEXES, BlockType.ME, defaultIDComparator, defaultComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.ASSEMBLIES, BlockType.ME, defaultIDComparator, defaultComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.DETAILS, BlockType.ME, defaultComparator, defaultComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.STANDARDS, BlockType.ME, defaultNameComparator, defaultComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.OTHERS, BlockType.ME, defaultNameComparator, posComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.MATERIALS, BlockType.ME, defaultComparator, defaultComparator, 0));
+		blockList.addBlock(new Block(BlockContentType.KITS, BlockType.ME, kitComparator, kitComparator, 0));
 		
-		blockList.getBlock(BlockContentType.DOCS, "Default").setIsRenumerizable(false);
-		blockList.getBlock(BlockContentType.KITS, "Default").setIsRenumerizable(false);
-		blockList.getBlock(BlockContentType.KITS, "ME").setIsRenumerizable(false);
+		blockList.getBlock(BlockContentType.DOCS, BlockType.DEFAULT).setIsRenumerizable(false);
+		blockList.getBlock(BlockContentType.KITS, BlockType.DEFAULT).setIsRenumerizable(false);
+		blockList.getBlock(BlockContentType.KITS, BlockType.ME).setIsRenumerizable(false);
 		
-		specification.setColumnLength(FormField.FORMAT, 3);
-		specification.setColumnLength(FormField.ZONE, 3);
-		specification.setColumnLength(FormField.ID, 3);
-		specification.setColumnLength(FormField.NAME, 194.0);
-		specification.setColumnLength(FormField.POSITION, 3);
-		specification.setColumnLength(FormField.QUANTITY, 3);
-		specification.setColumnLength(FormField.REMARK, 88);
+		Specification.settings.setColumnLength(FormField.FORMAT, 3);
+		Specification.settings.setColumnLength(FormField.ZONE, 3);
+		Specification.settings.setColumnLength(FormField.ID, 3);
+		Specification.settings.setColumnLength(FormField.NAME, 194.0);
+		Specification.settings.setColumnLength(FormField.POSITION, 3);
+		Specification.settings.setColumnLength(FormField.QUANTITY, 3);
+		Specification.settings.setColumnLength(FormField.REMARK, 88);
 		
 		
 		if(!specification.validate()){
@@ -119,7 +120,7 @@ public class SampleHandler extends AbstractHandler {
 					if(specification.getBlockList().get(i).getListOfLines()!=null) System.out.println("Size of " + specification.getBlockList().get(i).getBlockTitle() + " = " + specification.getBlockList().get(i).getListOfLines().size());
 				}
 				
-				if (!specification.isOkPressed) { return null; }
+				if (!Specification.settings.getBooleanProperty("bOkPressed")) { return null; }
 				
 				saveSettings(specification.getBlockList());
 				
@@ -155,11 +156,12 @@ public class SampleHandler extends AbstractHandler {
 					PerfTrack.addToLog("Saving&unlocking BOM");
 				}
 				
-				Specification.settings = null;
-				specification = null;				
 				PerfTrack.printLog();
 			} catch (TCException e) {
 				e.printStackTrace();
+			} finally {
+				specification.cleanUp();
+				specification = null;
 			}
 		}
 		return null;
@@ -174,7 +176,7 @@ public class SampleHandler extends AbstractHandler {
 			String[] props = blockProps.split(":");
 			if(props.length!=4) continue;
 			System.out.println(props[0]);
-			Block block = blockList.getBlock(BlockContentType.values()[Character.getNumericValue(props[0].charAt(0))], props[0].charAt(1)=='0'?"Default":"ME");
+			Block block = blockList.getBlock(BlockContentType.values()[Character.getNumericValue(props[0].charAt(0))], props[0].charAt(1)=='0'?BlockType.DEFAULT:BlockType.ME);
 			if(block!=null){
 				block.setReservePosNum(Integer.parseInt(props[1]));
 				block.setReserveLinesNum(Integer.parseInt(props[2]));
@@ -187,7 +189,7 @@ public class SampleHandler extends AbstractHandler {
 		String settingsString = "";
 		String del = ":";
 		for(Block block:blockList){
-			settingsString+=block.getBlockContentType().ordinal()+(block.getBlockType().equals("Default")?"0":"1")+del+block.getReservePosNum()+del+block.getReserveLinesNum()+del+block.getIntervalPosNum();
+			settingsString+=block.getBlockContentType().ordinal()+(block.getBlockType()==BlockType.DEFAULT?"0":"1")+del+block.getReservePosNum()+del+block.getReserveLinesNum()+del+block.getIntervalPosNum();
 			settingsString+="&";
 		}
 		if(settingsString.endsWith("&")){

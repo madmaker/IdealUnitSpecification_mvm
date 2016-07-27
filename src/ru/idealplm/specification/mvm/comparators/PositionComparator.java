@@ -11,10 +11,10 @@ public class PositionComparator implements Comparator<BlockLine> {
 	@Override
 	public int compare(BlockLine bl0, BlockLine bl1) {
 		Pattern pattern = Pattern.compile("[0-9]+");
-		Matcher matcher0 = pattern.matcher(bl0.getPosition());
-		Matcher matcher1 = pattern.matcher(bl1.getPosition());
-		boolean hasAsterisk0 = bl0.getPosition().endsWith("*");
-		boolean hasAsterisk1 = bl1.getPosition().endsWith("*");
+		Matcher matcher0 = pattern.matcher(bl0.attributes.getPosition());
+		Matcher matcher1 = pattern.matcher(bl1.attributes.getPosition());
+		boolean hasAsterisk0 = bl0.attributes.getPosition().endsWith("*");
+		boolean hasAsterisk1 = bl1.attributes.getPosition().endsWith("*");
  		int result0_i;
 		int result1_i;
 		try{

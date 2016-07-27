@@ -37,7 +37,7 @@ import ru.idealplm.utils.specification.methods.AttachMethod;
 
 public class MVMAttachMethod implements AttachMethod{
 	
-	private Specification specification;
+	private Specification specification = Specification.getInstance();
 	private TCComponentBOMLine topBOMLine;
 	private TCComponentItemRevision topIR;
 	private TCComponentItemRevision specIR;
@@ -47,9 +47,8 @@ public class MVMAttachMethod implements AttachMethod{
 	public DataManagementService dmService;
 
 	@Override
-	public void putInTeamcenter(Specification specification) {
+	public void putInTeamcenter() {
 		try{
-			this.specification = specification;
 			this.topBOMLine = specification.getTopBOMLine();
 			this.topIR = topBOMLine.getItemRevision();
 			this.reportFile = specification.getReportFile();
@@ -119,10 +118,10 @@ public class MVMAttachMethod implements AttachMethod{
 				specIR.lock();
 				topBOMLine.getItemRevision().setProperty("m9_AddNote", Specification.settings.getStringProperty("AddedText"));
 				//topBOMLine.getItemRevision().setProperty("m9_AddNote", Specification.settings.getStringProperty("blockSettings"));
-				specIR.setProperty("m9_Litera1", specification.settings.getStringProperty("LITERA1"));
-				specIR.setProperty("m9_Litera2", specification.settings.getStringProperty("LITERA2"));
-				specIR.setProperty("m9_Litera3", specification.settings.getStringProperty("LITERA3"));
-				specIR.getItem().setProperty("m9_PrimaryApp", specification.settings.getStringProperty("PERVPRIM"));
+				specIR.setProperty("m9_Litera1", Specification.settings.getStringProperty("LITERA1"));
+				specIR.setProperty("m9_Litera2", Specification.settings.getStringProperty("LITERA2"));
+				specIR.setProperty("m9_Litera3", Specification.settings.getStringProperty("LITERA3"));
+				specIR.getItem().setProperty("m9_PrimaryApp", Specification.settings.getStringProperty("PERVPRIM"));
 				specIR.save();
 				specIR.unlock();
 				
