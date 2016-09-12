@@ -48,6 +48,9 @@ public class MVMBlockLineFactory extends BlockLineFactory{
 			resultBlockLine.uid = uid;
 			
 			if(item.getType().equals("M9_CompanyPart")){
+				if(!properties[8].isEmpty()){
+					Specification.errorList.addError(new Error("ERROR", "Объект с идентификатором " + item.getProperty("item_id") + " имеет ссылку на комплект."));
+				}
 				String typeOfPart = item.getProperty("m9_TypeOfPart");
 				if(typeOfPart.equals("Сборочная единица") || typeOfPart.equals("Комплекс")){
 					/*********************** Сборки и Комплексы ***********************/
@@ -146,7 +149,12 @@ public class MVMBlockLineFactory extends BlockLineFactory{
 				}
 			} else if(item.getType().equals("CommercialPart")){
 				/****************************Коммерческие********************************/
-				resultBlockLine.attributes.setName(itemIR.getProperty("object_name"));
+				String name = itemIR.getProperty("object_name");
+				if(name.isEmpty()){
+					name = "Наименование в 1С не согласовано";
+					resultBlockLine.addProperty("bNameNotApproved", "true");
+				}
+				resultBlockLine.attributes.setName(name);
 				resultBlockLine.attributes.setQuantity(properties[2]);
 				resultBlockLine.attributes.setRemark(properties[3]);
 				resultBlockLine.addRefBOMLine(bomLine);
@@ -171,7 +179,7 @@ public class MVMBlockLineFactory extends BlockLineFactory{
 				resultBlockLine.addProperty("UOM", properties[7]);
 				if(!properties[8].isEmpty()){
 					resultBlockLine.attributes.createKits();
-					resultBlockLine.attributes.addKit(properties[8], properties[6], properties[2].isEmpty()?1:Integer.parseInt(properties[2]));
+					resultBlockLine.attributes.addKit(properties[8], properties[6], properties[2].isEmpty()?1:Double.parseDouble(properties[2]));
 				}
 				resultBlockLine.blockContentType = BlockContentType.MATERIALS;
 				resultBlockLine.blockType = isDefault?BlockType.DEFAULT:BlockType.ME;

@@ -3,19 +3,12 @@ package ru.idealplm.specification.mvm.methods;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-
-
-
-
-
-
-
 
 import com.teamcenter.rac.aif.kernel.AIFComponentContext;
 import com.teamcenter.rac.kernel.TCComponent;
@@ -52,6 +45,8 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 	private ArrayList<String> docKitTypesShort;
 	private ArrayList<String> docKitTypesLong;
 	private HashMap<String, BlockLine> materialUIDs;
+	private HashMap<String, BlockLine> uids;
+	private HashMap<String, BlockLine> uidsSubstitute;
 	
 	public MVMDataReaderMethod() {
 		bl_sequence_noList = new ArrayList<String>();
@@ -62,6 +57,8 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 		docKitTypesShort = new ArrayList<String>();
 		docKitTypesLong = new ArrayList<String>();
 		materialUIDs = new HashMap<String, BlockLine>();
+		uids = new HashMap<String, BlockLine>();
+		uidsSubstitute = new HashMap<String, BlockLine>();
 	}
 	
 	boolean atLeastOnePosIsFixed = false;
@@ -75,19 +72,6 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			id = pid;
 		}
 		
-		private final String[] blProps = new String[] { 
-				"M9_Zone",
-				"bl_sequence_no",
-				"bl_quantity",
-				"M9_Note",
-				"M9_IsFromEAssembly", //у вхождений с одинаковым sequence_no должно быть одинаковое значение
-				"M9_DisChangeFindNo", //у вхождений с одинаковым sequence_no должно быть одинаковое значение
-				"m9_KITName",
-				"bl_item_uom_tag",
-				"M9_KITs"
-		};
-		
-		
 		@Override
 		public void run() {
 			TCComponentBOMLine bomLine;
@@ -97,12 +81,15 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					bomLine = (TCComponentBOMLine) bomQueue.take().getComponent();
 					BlockLine line = blFactory.newBlockLine(bomLine);
 					line.isSubstitute = false;
+					uids.put(line.uid, line);
 					for(TCComponentBOMLine comp : bomLine.listSubstitutes()){
 						BlockLine substituteLine = blFactory.newBlockLine(comp);
 						substituteLine.attributes.setPosition(line.attributes.getPosition()+"*");
 						substituteLine.attributes.setQuantity("-1");
 						substituteLine.isSubstitute = true;
 						line.addSubstituteBlockLine(substituteLine);
+						blockList.getBlock(substituteLine.blockContentType, substituteLine.blockType).addBlockLine(substituteLine.uid, substituteLine); //Possible fix for substitute lines
+						uidsSubstitute.put(substituteLine.uid, substituteLine);
 					}
 					if(line.blockType == BlockType.ME) atLeastOneME = true;
 					if(!line.isRenumerizable) {
@@ -113,6 +100,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					if(line.blockContentType == BlockContentType.MATERIALS){
 						if(materialUIDs.containsKey(line.uid)){
 							BlockLine storedLine = materialUIDs.get(line.uid);
+							if(storedLine.attributes.getPosition().isEmpty()){ // Update line position if it was empty (and hope for the best)
+								storedLine.attributes.setPosition(line.attributes.getPosition());
+							}
 							storedLine.attributes.createKits();
 							storedLine.attributes.addKit(line.attributes.getKits());
 							storedLine.addRefBOMLine(line.getRefBOMLines().get(0));
@@ -174,7 +164,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				bomQueue = new ArrayBlockingQueue<AIFComponentContext>(childBOMLines.length);
 				bomQueue.addAll(Arrays.asList(childBOMLines));
 				PerfTrack.addToLog("Getting BOM");
-				ExecutorService service = Executors.newFixedThreadPool(/*Runtime.getRuntime().availableProcessors()*/2);
+				/*ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 				for(int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
 					service.submit(new MVMBOMLineProcessor(i));
 				}
@@ -183,7 +173,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				service.awaitTermination(3, TimeUnit.MINUTES);
 				while(!service.isTerminated()){
 					Thread.sleep(100);
-				}
+				}*/
+				MVMBOMLineProcessor bomLineProcessor = new MVMBOMLineProcessor(0);
+				bomLineProcessor.run();
 			}
 			
 			for (AIFComponentContext currBOMLineContext : childBOMLines)
@@ -204,6 +196,11 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			}
 			if(atLeastOneME && Specification.settings.getStringProperty("MEDocumentId")==null){
 				specification.getErrorList().addError(new Error("ERROR", "Отсутствует документ МЭ."));
+			}
+			for(Entry<String,BlockLine> entry:uidsSubstitute.entrySet()){
+				if(uids.containsKey(entry.getKey()))	{
+					specification.getErrorList().addError(new Error("ERROR", "Объект с идентификатором " + entry.getValue().attributes.getId() + " присутствует в составе и заменах одновременно."));
+				}
 			}
 			
 			Specification.settings.addBooleanProperty("canRenumerize", !atLeastOnePosIsFixed);
@@ -247,7 +244,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			String name;
 			String object_name;
 			String shortType;
-			boolean isBaseDoc;
+			boolean isBaseDoc = true;
 			boolean gostNameIsFalse;
 			MVMBlockLineHandler blockLineHandler = new MVMBlockLineHandler();
 			
@@ -270,6 +267,10 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					Specification.settings.addStringProperty("LITERA2", documentIR.getProperty("m9_Litera2"));
 					Specification.settings.addStringProperty("LITERA3", documentIR.getProperty("m9_Litera3"));
 					Specification.settings.addStringProperty("PERVPRIM", documentIR.getItem().getProperty("m9_PrimaryApp"));
+					AIFComponentContext[] basedocs = documentIR.getItem().getRelated("m9_DocumentBaseRel");
+					if(basedocs.length>0){
+						Specification.settings.addStringProperty("BASEDOC", basedocs[0].getComponent().getProperty("object_name"));						
+					}
 					try{
 						for (AIFComponentContext compContext : documentIR.getChildren()){
 							if ((compContext.getComponent() instanceof TCComponentDataset) 
@@ -340,6 +341,9 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			}
 		} catch (TCException e) {
 			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 	}
@@ -356,11 +360,11 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 					Specification.settings.addStringProperty("AddCheck", tempComp.getProperty("m9_AddCheck"));
 					Specification.settings.addStringProperty("NCheck", tempComp.getProperty("m9_NCheck"));
 					Specification.settings.addStringProperty("Approver", tempComp.getProperty("m9_Approver"));
-					//TODO okeanos
-					String designerDate = GeneralUtils.parseDateFromTC(tempComp.getProperty("m9_DesignerDate"));
-					System.out.println(":DATE1:"+tempComp.getProperty("m9_DesignerDate"));
+					//TODO in case of return of date
+					/*String designerDate = GeneralUtils.parseDateFromTC(tempComp.getProperty("m9_DesignDate"));
+					System.out.println(":DATE1:"+tempComp.getProperty("m9_DesignDate"));
 					System.out.println(":DATE2:"+designerDate);
-					Specification.settings.addStringProperty("DesignerDate", tempComp.getProperty("m9_DesignDate"));
+					Specification.settings.addStringProperty("DesignDate", designerDate);*/
 				}
 				if(specIR.getRelatedComponent("IMAN_master_form_rev")!=null){
 					Specification.settings.addStringProperty("blockSettings", specIR.getRelatedComponent("IMAN_master_form_rev").getProperty("object_desc"));

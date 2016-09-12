@@ -21,7 +21,9 @@ import ru.idealplm.specification.mvm.comparators.PositionComparator;
 import ru.idealplm.utils.specification.Block;
 import ru.idealplm.utils.specification.BlockLine;
 import ru.idealplm.utils.specification.Specification;
+import ru.idealplm.utils.specification.Specification.BlockContentType;
 import ru.idealplm.utils.specification.Specification.FormField;
+import ru.idealplm.utils.specification.Error;
 import ru.idealplm.utils.specification.methods.PrepareMethod;
 
 public class MVMPrepareMethod implements PrepareMethod{
@@ -42,7 +44,30 @@ public class MVMPrepareMethod implements PrepareMethod{
 				firstPos = firstPos + block.getReservePosNum() + block.getRenumerizableLinesCount() + (block.getRenumerizableLinesCount()-1)*block.getIntervalPosNum();
 				System.out.println("next:"+block.getReservePosNum()+":"+block.getRenumerizableLinesCount()+":"+block.getIntervalPosNum());
 			}
-			for(Block block:specification.getBlockList()) block.run();
+
+			// Block for assigning positions to lines without ones (doesn't require renumerizing)
+			for(Block block:specification.getBlockList()) {
+				
+					for(BlockLine bl:block.getListOfLines()){
+						if(!bl.isSubstitute){
+							try {
+								if(bl.getRefBOMLines()!=null && !bl.isSubstitute){
+									for(TCComponentBOMLine chbl:bl.getRefBOMLines()){
+										chbl.setProperty("bl_sequence_no", bl.attributes.getPosition());
+										if(block.getBlockContentType()==BlockContentType.MATERIALS) System.out.println("/| setting seq no " + bl.attributes.getPosition() + " for " + bl.attributes.getStringValueFromField(FormField.NAME));
+										//TODO chbl.setProperty("Oc9_DisChangeFindNo", "true"); for mvm
+									}
+								}
+							} catch (TCException e) {
+								e.printStackTrace();
+							}
+						} else {
+							System.out.println("WOW!");
+						}
+					}
+				
+				block.sort();
+			}
 			
 			if(Specification.settings.getBooleanProperty("doReadLastRevPos")){
 				System.out.println("...READING LAST REV");
@@ -73,6 +98,7 @@ public class MVMPrepareMethod implements PrepareMethod{
 								if(bl.getRefBOMLines()!=null && !bl.isSubstitute){
 									for(TCComponentBOMLine chbl:bl.getRefBOMLines()){
 										chbl.setProperty("bl_sequence_no", currentPos);
+										chbl.setProperty("M9_DisChangeFindNo", "true");
 									}
 								}
 								if(bl.getSubstituteBlockLines()!=null){
@@ -119,18 +145,40 @@ public class MVMPrepareMethod implements PrepareMethod{
 					Collections.sort(block.getListOfLines(), new PositionComparator());
 				}
 			}
+			
 			if(Specification.settings.getBooleanProperty("doUseReservePos")){
+				System.out.println("...USING RESERVE POS");
+				int currentPos = 1;
 				for(Block block:specification.getBlockList()) {
-					String currentPos = String.valueOf(block.getFirstPosNo());
 					if(!block.isRenumerizable()) continue;
 					for(BlockLine bl:block.getListOfLines()){
 						if(!bl.isSubstitute){
+							if(!bl.isRenumerizable){
+								currentPos = Integer.parseInt(bl.attributes.getPosition()) + 1;
+								continue;
+							} else {
+								int nextPos = -1;
+								int indexOfLine = block.getListOfLines().indexOf(bl);
+								if(indexOfLine <= block.size()-1){
+									nextPos = Integer.parseInt(block.getListOfLines().get(indexOfLine+1).attributes.getPosition());
+								} else {
+									int indexOfBlock = specification.getBlockList().indexOf(block);
+									if(indexOfBlock < specification.getBlockList().size()){
+										nextPos = Integer.parseInt(specification.getBlockList().get(indexOfBlock+1).getListOfLines().get(0).attributes.getPosition());
+									}
+								}
+								if(nextPos!=-1){
+									if(currentPos>=nextPos){
+										Specification.errorList.addError(new Error("ERROR", "Невозможно назначить позицию для " + bl.attributes.getId()));
+									}
+								}
+							}
 							try {
 								//bl.renumerize(String.valueOf(currentPos));
-								bl.attributes.setPosition(currentPos);
+								bl.attributes.setPosition(String.valueOf(currentPos));
 								if(bl.getRefBOMLines()!=null && !bl.isSubstitute){
 									for(TCComponentBOMLine chbl:bl.getRefBOMLines()){
-										chbl.setProperty("bl_sequence_no", currentPos);
+										chbl.setProperty("bl_sequence_no", String.valueOf(currentPos));
 									}
 								}
 								if(bl.getSubstituteBlockLines()!=null){
@@ -141,9 +189,10 @@ public class MVMPrepareMethod implements PrepareMethod{
 							} catch (TCException e) {
 								e.printStackTrace();
 							}
-							currentPos = String.valueOf(Integer.parseInt(currentPos) + block.getIntervalPosNum() + 1);
+							currentPos = currentPos + block.getIntervalPosNum() + 1;
 						}
 					}
+					currentPos+=block.getReservePosNum();
 					Collections.sort(block.getListOfLines(), new PositionComparator());
 				}
 			}

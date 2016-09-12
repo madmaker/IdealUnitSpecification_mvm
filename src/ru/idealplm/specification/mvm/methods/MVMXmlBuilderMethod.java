@@ -20,6 +20,7 @@ import ru.idealplm.utils.specification.Block;
 import ru.idealplm.utils.specification.BlockLine;
 import ru.idealplm.utils.specification.BlockList;
 import ru.idealplm.utils.specification.Specification;
+import ru.idealplm.utils.specification.Specification.BlockContentType;
 import ru.idealplm.utils.specification.Specification.BlockType;
 import ru.idealplm.utils.specification.Specification.FormField;
 import ru.idealplm.utils.specification.methods.XmlBuilderMethod;
@@ -122,7 +123,10 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			blockList = specification.getBlockList();
 			ListIterator<Block> iterator = blockList.listIterator();
 			Block block;
-			
+			if (node_block == null) {
+				node_block = document.createElement("Block");
+			}
+			addEmptyLines(1);
 			while(iterator.hasNext()){
 				block = iterator.next();
 				processBlock(block);
@@ -226,12 +230,12 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 	public void newLine(Block block, BlockLine line){
 		boolean isLastLineInBlock = (block.getListOfLines().get(block.getListOfLines().size()-1)==line) && blockList.getLast()==block;
 		
-		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.lineHeight))){
+		if(isLastLineInBlock && (globalRemark!=null && getFreeLinesNum() < (globalRemark.size() + line.lineHeight + 1/*empty line before remark*/))){
 			newPage();
 		}
 		
 		if(getFreeLinesNum() < (line.lineHeight + 1 + countSublines(line))) newPage();
-		
+		/* Check if position of next line != position of this line + 1, then we attach empty lines to show them later inbetween lines in pdf */
 		if(block.getListOfLines().indexOf(line) != block.size()-1){
 			int thisLinePos = 0;
 			int nextLinePos = 0;
@@ -280,6 +284,11 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			}
 			node = document.createElement("Col_" + 5);
 			node.setTextContent((line.attributes.getName()!=null && (i < line.attributes.getName().size())) ? line.attributes.getName().get(i) : "");
+			if(line.blockContentType==BlockContentType.STANDARDS||line.blockContentType==BlockContentType.OTHERS||line.blockContentType==BlockContentType.MATERIALS){
+				if(line.getProperty("bNameNotApproved")!=null){
+					node.setAttribute("warning", "true");
+				}
+			}
 			node_occ.appendChild(node);
 			node = document.createElement("Col_" + 7);
 			node.setTextContent((line.attributes.getRemark()!=null && (i < line.attributes.getRemark().size())) ? line.attributes.getRemark().get(i) : "");

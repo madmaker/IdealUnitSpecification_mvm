@@ -64,11 +64,12 @@ public class MainSpecificationDialog extends Dialog {
 	private Text textNCheck;
 	private Text textApprover;
 	
-	private DateButton dateDesigner;
+	//TODO in case of return of date
+	/*private DateButton dateDesigner;
 	private DateButton dateCheck;
 	private DateButton dateAddCheck;
 	private DateButton dateNCheck;
-	private DateButton dateApprover;
+	private DateButton dateApprover;*/
 
 	/**
 	 * Create the dialog.
@@ -142,18 +143,17 @@ public class MainSpecificationDialog extends Dialog {
 		textAddCheckPost.setText(Specification.settings.getStringProperty("AddCheckPost")==null?"":Specification.settings.getStringProperty("AddCheckPost"));
 		textAddCheck.setText(Specification.settings.getStringProperty("AddCheck")==null?"":Specification.settings.getStringProperty("AddCheck"));
 
-		//TODO okeanos
-		Date d1 = new Date();
-		d1.setYear(116);
-		d1.setMonth(11);
-		d1.setDate(29);
-		System.out.println(Specification.settings.getStringProperty("DesignerDate"));
-		//Date d2 = new Date(Specification.settings.getStringProperty("DesignerDate"));
-		dateDesigner.setDate(d1);
-		dateCheck.setDate(d1);
-		dateAddCheck.setDate(d1);
-		dateApprover.setDate(d1);
-		dateNCheck.setDate(d1);
+		//TODO in case of return of date
+		/*String s_DesignDate = Specification.settings.getStringProperty("DesignDate");
+		String s_CheckDate = Specification.settings.getStringProperty("CheckDate");
+		String s_AddCheckDate = Specification.settings.getStringProperty("AddCheckDate");
+		String s_NCheckDate = Specification.settings.getStringProperty("NCheckDate");
+		String s_ApproveDate = Specification.settings.getStringProperty("ApproveDate");
+		if(s_DesignDate!=null) { dateDesigner.setDate(GeneralUtils.getDateFormSimpleString(s_DesignDate)); }else{ dateDesigner.setDate("");}
+		if(s_CheckDate!=null) { dateCheck.setDate(GeneralUtils.getDateFormSimpleString(s_CheckDate)); }else{ dateCheck.setDate("");}
+		if(s_AddCheckDate!=null) { dateAddCheck.setDate(GeneralUtils.getDateFormSimpleString(s_AddCheckDate)); }else{ dateAddCheck.setDate("");}
+		if(s_NCheckDate!=null)  dateApprover.setDate(GeneralUtils.getDateFormSimpleString(s_NCheckDate));
+		if(s_ApproveDate!=null)  dateNCheck.setDate(GeneralUtils.getDateFormSimpleString(s_ApproveDate));*/
 		
 		PerfTrack.addToLog("Filling contents");
 	}
@@ -214,8 +214,8 @@ public class MainSpecificationDialog extends Dialog {
 		textApprover = new Text(compositeSignatures, SWT.BORDER);
 		textApprover.setBounds(144, 212, 110, 23);
 		
-		//TODO okeanos
-		Composite compositeDesigner = new Composite(compositeSignatures, SWT.EMBEDDED);
+		//TODO in case of return of date
+		/*Composite compositeDesigner = new Composite(compositeSignatures, SWT.EMBEDDED);
 		compositeDesigner.setBounds(260, 44, 150, 23);
 		java.awt.Frame frameDesigner = SWT_AWT.new_Frame(compositeDesigner);
 	    java.awt.Panel panelDesigner = new java.awt.Panel(new java.awt.BorderLayout());
@@ -258,7 +258,7 @@ public class MainSpecificationDialog extends Dialog {
 	    frameApprover.add(panelApprover);
 		dateApprover = new DateButton();
 		dateApprover.setDoubleBuffered(true);
-		panelApprover.add(dateApprover);
+		panelApprover.add(dateApprover);*/
 		
 	    tabMain.setText("Настройки");
 	    tabSignatures.setText("\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u0442\u044B");
@@ -486,12 +486,15 @@ public class MainSpecificationDialog extends Dialog {
 				Specification.settings.addStringProperty("NCheck", textNCheck.getText());
 				Specification.settings.addStringProperty("Approver", textApprover.getText());
 				
-				//TODO okeanos
-				Specification.settings.addStringProperty("DesignerDate", dateDesigner.getText());
-				Specification.settings.addStringProperty("CheckDate", dateCheck.getText());
-				Specification.settings.addStringProperty("AddCheckDate", dateAddCheck.getText());
-				Specification.settings.addStringProperty("NCheckDate", dateNCheck.getText());
-				Specification.settings.addStringProperty("ApproverDate", dateApprover.getText());
+				//TODO in case of return of date
+				/*Specification.settings.addStringProperty("DesignerDate", dateDesigner.getText().equals("Дата не установлена.")?null:dateDesigner.getText());
+				Specification.settings.addStringProperty("CheckDate", dateCheck.getText().equals("Дата не установлена.")?null:dateCheck.getText());
+				Specification.settings.addStringProperty("AddCheckDate", dateAddCheck.getText().equals("Дата не установлена.")?null:dateAddCheck.getText());
+				Specification.settings.addStringProperty("NCheckDate", dateNCheck.getText().equals("Дата не установлена.")?null:dateNCheck.getText());
+				Specification.settings.addStringProperty("ApproverDate", dateApprover.getText().equals("Дата не установлена.")?null:dateApprover.getText());
+				System.out.println(":DATE3:"+dateDesigner.getText());
+				System.out.println(":DATE4:"+dateDesigner.getDateString());
+				System.out.println(":DATE5:"+Specification.settings.getStringProperty("CheckDate"));*/
 				
 				BlockList blockList = specification.getBlockList();
 				int j = 0;
