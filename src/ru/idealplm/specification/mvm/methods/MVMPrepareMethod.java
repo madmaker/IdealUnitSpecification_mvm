@@ -118,6 +118,20 @@ public class MVMPrepareMethod implements PrepareMethod{
 			if(Specification.settings.getBooleanProperty("doRenumerize")){
 				System.out.println("...RENUMERIZING");
 				for(Block block:specification.getBlockList()) {
+					if(!block.isRenumerizable()) continue;
+					for(BlockLine bl:block.getListOfLines()){
+						if(!bl.isSubstitute){
+							for(TCComponentBOMLine chbl:bl.getRefBOMLines()){
+								try{
+									chbl.setProperty("bl_sequence_no", "");
+								}catch(Exception ex){
+									ex.printStackTrace();
+								}
+							}
+						}
+					}
+				}
+				for(Block block:specification.getBlockList()) {
 					String currentPos = String.valueOf(block.getFirstPosNo());
 					if(!block.isRenumerizable()) continue;
 					for(BlockLine bl:block.getListOfLines()){

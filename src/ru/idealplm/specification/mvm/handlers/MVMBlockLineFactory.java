@@ -3,6 +3,7 @@ package ru.idealplm.specification.mvm.handlers;
 import com.teamcenter.rac.aif.kernel.AIFComponentContext;
 import com.teamcenter.rac.kernel.TCComponent;
 import com.teamcenter.rac.kernel.TCComponentBOMLine;
+import com.teamcenter.rac.kernel.TCComponentForm;
 import com.teamcenter.rac.kernel.TCComponentItem;
 import com.teamcenter.rac.kernel.TCComponentItemRevision;
 
@@ -149,7 +150,12 @@ public class MVMBlockLineFactory extends BlockLineFactory{
 				}
 			} else if(item.getType().equals("CommercialPart")){
 				/****************************Коммерческие********************************/
-				String name = itemIR.getProperty("object_name");
+				String name = "";
+				AIFComponentContext[] cod1CRels = itemIR.getItem().getRelated("M9_Cod1CRel");
+				if(cod1CRels.length>0){
+					TCComponentForm cod1CForm = (TCComponentForm) cod1CRels[0].getComponent();
+					name = cod1CForm.getProperty("m9_FullName1C");
+				}
 				if(name.isEmpty()){
 					name = "Наименование в 1С не согласовано";
 					resultBlockLine.addProperty("bNameNotApproved", "true");
@@ -173,7 +179,18 @@ public class MVMBlockLineFactory extends BlockLineFactory{
 				}
 			} else if(item.getType().equals("M9_Material")){
 				/****************************Материалы********************************/
-				resultBlockLine.attributes.setName(itemIR.getProperty("object_name"));
+				//resultBlockLine.attributes.setName(itemIR.getProperty("object_name"));
+				String name = "";
+				AIFComponentContext[] cod1CRels = itemIR.getItem().getRelated("M9_Cod1CRel");
+				if(cod1CRels.length>0){
+					TCComponentForm cod1CForm = (TCComponentForm) cod1CRels[0].getComponent();
+					name = cod1CForm.getProperty("m9_FullName1C");
+				}
+				if(name.isEmpty()){
+					name = "Наименование в 1С не согласовано";
+					resultBlockLine.addProperty("bNameNotApproved", "true");
+				}
+				resultBlockLine.attributes.setName(name);
 				resultBlockLine.attributes.setQuantity(properties[2]);
 				resultBlockLine.addRefBOMLine(bomLine);
 				resultBlockLine.addProperty("UOM", properties[7]);
@@ -196,7 +213,19 @@ public class MVMBlockLineFactory extends BlockLineFactory{
 					int quantotyGD = Integer.parseInt(properties[2].equals("")?"1":properties[2]);
 					String uom = ((TCComponentBOMLine) materialBOMLines[0].getComponent()).getProperty("bl_item_uom_tag");
 					uom = uom.equals("*")?"":uom;
-					resultBlockLine.attributes.setName(materialIR.getItem().getProperty("object_name"));
+					
+					String name = "";
+					AIFComponentContext[] cod1CRels = materialIR.getItem().getRelated("M9_Cod1CRel");
+					if(cod1CRels.length>0){
+						TCComponentForm cod1CForm = (TCComponentForm) cod1CRels[0].getComponent();
+						name = cod1CForm.getProperty("m9_FullName1C");
+					}
+					if(name.isEmpty()){
+						name = "Наименование в 1С не согласовано";
+						resultBlockLine.addProperty("bNameNotApproved", "true");
+					}
+					resultBlockLine.attributes.setName(name);
+					//resultBlockLine.attributes.setName(materialIR.getItem().getProperty("object_name"));
 					resultBlockLine.attributes.setQuantity(String.valueOf(quantityMD*quantotyGD));
 					resultBlockLine.attributes.setRemark(uom);
 					resultBlockLine.addRefBOMLine(bomLine);

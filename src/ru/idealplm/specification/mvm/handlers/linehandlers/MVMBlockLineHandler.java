@@ -25,6 +25,7 @@ public class MVMBlockLineHandler implements BlockLineHandler{
 			bomLine.attributes.setFormat("*)");
 		}
 		if(bomLine.attributes.getKits()!=null){
+			bomLine.attributes.getKits().setTotalQuantity(bomLine.attributes.getQuantity());
 			bomLine.attributes.getRemark().insert(bomLine.attributes.getKits().getKits());
 		}
 		if(bomLine.getSubstituteBlockLines()!=null){

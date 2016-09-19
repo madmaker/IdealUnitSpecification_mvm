@@ -71,6 +71,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 		stampMap.put("SPCODE", " ");
 		stampMap.put("UTV", " ");
 		stampMap.put("ZAVOD", " ");
+		stampMap.put("BASEDOC", " ");
 	}
 	/****************/
 
@@ -94,6 +95,8 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 		stampMap.put("NORM", Specification.settings.getStringProperty("NCheck")==null?"":Specification.settings.getStringProperty("NCheck"));
 		stampMap.put("UTV", Specification.settings.getStringProperty("Approver")==null?"":Specification.settings.getStringProperty("Approver"));
 		stampMap.put("RAZR", Specification.settings.getStringProperty("Designer")==null?"":Specification.settings.getStringProperty("Designer"));
+		
+		stampMap.put("BASEDOC", Specification.settings.getStringProperty("BASEDOC")==null?"":Specification.settings.getStringProperty("BASEDOC"));
 		
 		emptyLine = (new BlockLine()).build();
 		emptyLine.attributes.setQuantity("-1.0");
@@ -136,7 +139,8 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 						//addEmptyLines(1);
 						String string = "Устанавливается по " + Specification.settings.getStringProperty("MEDocumentId");
 						node_occ = document.createElement("Occurrence");
-						node_occ.setAttribute("font", "underline,bold");
+						node_occ.setAttribute("font", "underline,bold,italic");
+						//node_occ.setAttribute("unite", "true");
 						node = document.createElement("Col_" + 4);
 						node.setTextContent(string.substring(0, string.length()/2));
 						node.setAttribute("align", "right");
@@ -193,7 +197,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			//addEmptyLines(1);
 			node_root.appendChild(node_block);
 			node_occ_title = document.createElement("Occurrence");
-			node_occ_title.setAttribute("font", "underline,bold");
+			node_occ_title.setAttribute("font", "underline,bold,italic");
 			node = document.createElement("Col_" + 5);
 			node.setAttribute("align", "center");
 			node.setTextContent(block.getBlockTitle());
@@ -314,7 +318,7 @@ public class MVMXmlBuilderMethod implements XmlBuilderMethod{
 			addEmptyLines(1);
 			for(String string : globalRemark){
 				node_occ = document.createElement("Occurrence");
-				node_occ.setAttribute("merge", "true");
+				//node_occ.setAttribute("unite", "true");
 				node = document.createElement("Col_" + 4);
 				node.setAttribute("align", "left");
 				node.setTextContent(string);
