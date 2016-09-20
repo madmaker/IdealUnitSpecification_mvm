@@ -34,6 +34,8 @@ public class MVMReportBuilderMethod implements ReportBuilderMethod{
 		/*writeToConsole(specification.getXmlFile(), "XML");
 		writeToConsole(Specification.settings.getConfigStream(), "CONFIG");
 		writeToConsole(Specification.settings.getTemplateStream(), "TEMPLATE");*/
+		Specification.settings.setTemplateStream(MVMReportBuilderMethod.class.getResourceAsStream("/pdf/MVMSpecPDFTemplate.xsl"));
+		Specification.settings.setConfigStream(MVMReportBuilderMethod.class.getResourceAsStream("/pdf/userconfig.xml"));
 		return PDFBuilder.xml2pdf(specification.getXmlFile(),  Specification.settings.getTemplateStream(), Specification.settings.getConfigStream());
 	}
 	
