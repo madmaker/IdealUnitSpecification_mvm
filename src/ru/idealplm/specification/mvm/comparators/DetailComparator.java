@@ -18,7 +18,7 @@ public class DetailComparator implements Comparator<BlockLine> {
 			return -1;
 		}
 		
-		DefaultComparator dc = new DefaultComparator(FormField.NAME);
+		DefaultComparator dc = new DefaultComparator(FormField.ID);
 		
 		return dc.compare(bl0, bl1);
 	}

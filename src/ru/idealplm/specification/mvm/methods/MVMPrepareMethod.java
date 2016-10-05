@@ -135,6 +135,7 @@ public class MVMPrepareMethod implements PrepareMethod{
 					String currentPos = String.valueOf(block.getFirstPosNo());
 					if(!block.isRenumerizable()) continue;
 					for(BlockLine bl:block.getListOfLines()){
+						block.sort();
 						if(!bl.isSubstitute){
 							try {
 								//bl.renumerize(String.valueOf(currentPos));

@@ -143,6 +143,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 				}
 			}
 			
+			PerfTrack.prepare("Getting BOM unpacked");
 			AIFComponentContext[] childBOMLines = topBOMLine.getChildren();
 			
 			for (AIFComponentContext currBOMLine : childBOMLines) {
@@ -155,6 +156,7 @@ public class MVMDataReaderMethod implements DataReaderMethod{
 			topBOMLine.refresh();
 			
 			childBOMLines = topBOMLine.getChildren();
+			PerfTrack.addToLog("Getting BOM unpacked");
 		
 			readSpecifiedItemData(topBOMLine);
 			readTopIRDocuments(topBOMLine);
